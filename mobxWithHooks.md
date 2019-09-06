@@ -1,4 +1,4 @@
-#1、老的用法
+# 1、老的用法  
 mobx是一个使用十分普遍的状态管理工具，在实际的开发过程中我们常常搭配react进行使用。在一些比较大的项目中，部分变量需要反复向下层组件进行传递，如果使用传统的组件props进行实现，层层包裹，未免过于繁琐，react官方针对这种场景，推出了context来进行上下文跨组件传递。而mobx也立足于react的context实现了inject语法，通过简洁的api，可以在任何想要使用全局状态的地方注入变量。为了方便进行全局的状态管理，往往设定一个全局的store,其中定义一些全局都会使用到的变量，进行状态控制，比较典型的例子如下：
 ```
 import React from 'react';
@@ -136,8 +136,8 @@ const Test = () => {
 export default observer(Test );
 ```
 官方例子中的useStores会返回所有在context中的内容，也就是所有上级provider中传递的内容，此处我们通过在自己的实现中传入一个字符串来控制选取我们需要的内容。
-如有任何疑问，欢迎留言交流~
-————————————————————————————————————
+如有任何疑问，欢迎留言交流~  
+————————————————————————————————————  
 参考文献：
-mobx-react迁移官方文档：
-https://mobx-react.js.org/recipes-migration
+mobx-react迁移官方文档：  
+https://mobx-react.js.org/recipes-migration  
