@@ -75,7 +75,8 @@ module.exports = function({types: t}) {
 ```
 eval("function square(x) {\n  return x * x;\n}\n\n//# sourceURL=webpack:///./index.js?");
 ```
-可以看到，源码中函数变量n变成了x,事实上，在babel插件中也有作用域的概念，即scope，可以用来保存局部状态，具体api详见文档。babel的文档太过繁杂，学习成本较高，对于二次开发不太友好，要进行一些骚操作还是要小心谨慎，最好先从babel官方的一些插件的源码开始阅读学习。笔者后续也会带来一篇balei插件源码分析的文章。
+可以看到，源码中函数变量n变成了x,事实上，在babel插件中也有作用域的概念，即scope，可以用来保存局部状态，具体api详见文档。babel的文档太过繁杂，学习成本较高，对于二次开发不太友好，要进行一些骚操作还是要小心谨慎，最好先从babel官方的一些插件的源码开始阅读学习。笔者后续也会带来一篇balei插件源码分析的文章。  
+填坑文章：[plugin-proposal-optional-chaining源码分析](https://juejin.im/post/5d745e12e51d4562120491ef)
 ————————————————————————————————————  
 参考文献：  
 babel插件写法官方文档：https://github.com/jamiebuilds/babel-handbook/blob/master/translations/zh-Hans/plugin-handbook.md  

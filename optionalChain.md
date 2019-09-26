@@ -209,5 +209,5 @@ let b = a?.c;
 转换后结果：
 ```
 var a = {};
-var c = a === null || a === void 0 ? void 0 : a.c;
+var b = a === null || a === void 0 ? void 0 : a.c;
 ```
