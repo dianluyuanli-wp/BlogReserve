@@ -111,7 +111,7 @@ function inject(selector, baseComponent) {
 ```
 import React from 'react';
 import { observer } from 'mobx-react';
-import comA from 'comA ';
+import comA from 'comA';
 import comB from 'comB';
 import { useStores } from '@utils/index';
 
