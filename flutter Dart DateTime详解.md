@@ -30,6 +30,16 @@ assert(berlinWallFell.weekday == DateTime.thursday);
 ##  实例方法
 `add(Duration duration) → DateTime`  
 加上传入的Duration实例所表示的时间间隔，返回一个新的DateTime实例，新实例与调用实例之间的时间差为duration  
+```
+  var now = DateTime.now();
+  var span = Duration(days: 1);
+  print(now);
+  print(now.add(span));
+```
+输出：  
+2019-12-15 09:29:59.605510  
+2019-12-16 09:29:59.605510  
+
 `compareTo(DateTime other) → int`  
 比较两个DateTime实例，如果二者相等，则返回0  
 `difference(DateTime other) → Duration`  
@@ -42,6 +52,16 @@ assert(berlinWallFell.weekday == DateTime.thursday);
 同传入的DateTime进行比较，如果标识的时间在传入实例之前，则返回true  
 `subtract(Duration duration) → DateTime`  
 减去传入的Duration实例所表示的时间间隔，返回一个新的DateTime实例，新实例与调用实例之间的时间差为duration  
+```
+  var now = DateTime.now();
+  var span = Duration(days: 1);
+  print(now);
+  print(now.subtract(span));
+```
+输出：  
+2019-12-15 09:32:02.811829
+2019-12-14 09:32:02.811829  
+
 `toIso8601String() → String`  
 返回依照IOS-8601标准的全精度表示的时间格式  
 `toLocal() → DateTime`  
@@ -56,6 +76,13 @@ assert(berlinWallFell.weekday == DateTime.thursday);
 ## 静态方法
 `parse(String formattedString) → DateTime`  
 通过标准格式的字符串来构造一个DateTime实例  
+```
+  var now = DateTime.parse('2019-12-12');
+  print(now);
+```
+输出：  
+2019-12-12 00:00:00.000  
+
 `tryParse(String formattedString) → DateTime`  
 通过标准格式的字符串来构造一个DateTime实例    
 ## 实例属性
