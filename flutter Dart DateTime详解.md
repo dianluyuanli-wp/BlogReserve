@@ -59,7 +59,7 @@ assert(berlinWallFell.weekday == DateTime.thursday);
   print(now.subtract(span));
 ```
 输出：  
-2019-12-15 09:32:02.811829
+2019-12-15 09:32:02.811829  
 2019-12-14 09:32:02.811829  
 
 `toIso8601String() → String`  
@@ -188,4 +188,4 @@ assert(difference.inDays == 7416);
 
 纯手工翻译，感谢支持！
 ## 参考文献
-[英文文档地址](https://developers.weixin.qq.com/miniprogram/dev/devtools/download.html)
+[英文文档地址](https://api.flutter.dev/flutter/dart-core/DateTime-class.html)
