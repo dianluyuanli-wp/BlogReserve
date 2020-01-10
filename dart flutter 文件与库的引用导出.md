@@ -39,8 +39,48 @@ import 'package:lib1/lib1.dart' show foo;
 // Import all names EXCEPT foo.
 import 'package:lib2/lib2.dart' hide foo;
 ```
-### 关于part library 和 part of
-在具体业务中有以下痛点：我们在应用中定义了多个类或者其他方法，在引用时我们想只import一个文件就将相关内容全部导出，如果将所有的类或者方法都放在一个文件中，会导致这个文件十分庞杂，不利于后续维护。为了解决这个问题，我们可以使用`part`、`library`和`part of`来组织我们的代码。
+### 关于part、library和part of
+在具体业务中有以下痛点：我们在应用中定义了多个类或者其他方法，在引用时我们想只import一个文件就将相关内容全部导出，如果将所有的类或者方法都放在一个文件中，会导致这个文件十分庞杂，不利于后续维护。为了解决这个问题，我们可以使用`part`、`library`和`part of`来组织我们的代码。  
+假设我们的存放公共类和方法的文件为为global.dart,其内容可按如下方法组织：
+```
+//  定义库的名字
+library global;
+
+//  文件中引用的公共包
+import 'dart:convert';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:i_chat/tools/utils.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import './tools/network.dart';
+import 'package:dio/dio.dart';
+import 'dart:math';
+import 'package:provider/provider.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
+
+//  组成这个库的其他文件
+part './model/User.dart';
+part './model/FriendInfo.dart';
+part './model/Message.dart';
+
+//  ...其他业务代码
+```
+在文件的开头使用`library`标识符定义库的名字，这也是其他子文件与其耦合起来的关键，`part`标识符指明组成这个库的其他文件。需要注意的是，`part`部分一定要在import部分的后面。  
+子文件的组织方式如下，以`./model/FriendInfo.dart`为例：
+```
+//  指明与其关联的父库
+part of global;
+
+//  定义其他内容
+class FriendInfo {
+    ...
+}
+```
+在子文件的开头，使用`part of`标识符，后跟父库的名字，来指明从属关系，注意子文件中不需要引入父库中已经引入的依赖。  
+在写其他业务逻辑代码的时候只需要直接引入`global.dart`文件即可：
+```
+import './global.dart';
+```
 ### 延迟加载或者异步加载
 延迟加载一个库时，要使用`deferred as`来进行导入：
 ```
@@ -60,18 +100,18 @@ Future greet() async {
 * 库包是其他包的依赖对象，他们自己也会依赖其他包，亦有可能会自引用，它们中往往含有会直接运行的脚本，库包的反面就是应用包
 ### 编写一个库包
 
-下图展示了一个最简单的库包组成结构：
+下图展示了一个最简单的库包组成结构:  
 ![极简库包结构图](https://www.dartcn.com/assets/libraries/simple-lib2-81ebdc20fdb53d3abbc4364956141eb0f6f8f275d1636064fc3e1db959b93c1a.png)  
 一个库所需的最简内容包括：  
-1. pubspec file
+1. pubspec 文件  
 `pubspec.yaml`文件在库包和应用包中是类似的，二者并没有区别。
-2. lib 目录
+2. lib 目录  
 正如你直觉感觉的那样，库的代码都在lib目录下，这部分内容对其他包也是可见的。如果需要的话，你可以在lib文件夹下创造其他层级的文件，按照惯例，逻辑实现的代码通常放在lib/src目录下。在该目录下的文件通常被认为是私有的。其他的包不应引入src目录下的内容从而暴露lib/scr中的API,正确的使用方法是从lib目录下的其他文件中引出内容。
 ### 组织一个库包
 当你创建称为迷你库的小型独立库时，库包最容易维护、扩展和测试。在绝大多数情况下，每一个类应该都以一个迷你库的形式存在，除非两个类之间深度耦合。  
 为了引出一个库中的公共api,建议在lib目录下创建一个'main'文件，方便使用者仅仅通过应用单文件来获取库中的所有功能。lib目录下也有可能包含其他可引入的库。例如，如果你的库可以跨平台工作，但是你创建了两个不同的子文件分别依赖dart:io和datr:html。部分包引用了不同的库，在引用这部分内容时需要给他们添加前缀。
 接下来我们观察一个真实的库包：shelf,这个包提供了使用Dart语法创建库的服务器的方法，下图是其的结构：
-![shelf库结构图](https://www.dartcn.com/assets/libraries/shelf-02e5fd43b660fcef7dbe6a883c40159e0379c8ee2088288ca60ed7dc8781bafd.png) 
+![shelf库结构图](https://www.dartcn.com/assets/libraries/shelf-02e5fd43b660fcef7dbe6a883c40159e0379c8ee2088288ca60ed7dc8781bafd.png)  
 在lib目录下的主文件shelf.dart暴露了lib/src下的其他文件中的内容给使用者：
 ```
 export 'src/cascade.dart';
