@@ -452,7 +452,7 @@ class _MyHomePageState extends State<MyHomePage> with CommonInterface{
       _selectedIndex = index; 
     });
   }
-
+  //  注册来自服务器端的事件响应
   void registerNotification() {
     //  这里的上下文必须要用根上下文，因为listencontainer组件本身会因为路由重建，导致上下文丢失，全局监听事件报错找不到组件树
     BuildContext rootContext = widget.originCon;
@@ -518,6 +518,12 @@ class MiddleContent extends StatelessWidget {
     return contentMap[index];
   }
 }
+```
+查看MyHomePage的参数我们可以发现，这里从上级组件传递了两个BuildContext实例。每个组件都有自己的context，context就是组件的上下文，由此作为切入点我们可以遍历组件的子元素，也可以向上追溯父组件，每当组件重绘的时候，context都会被销毁然后重建。_MyHomePageState的build方法首先调用registerNotification来注册对服务器端发起的事件的响应，比如好友发来消息时，消息列表自动更新；有人发起好友申请时触发提醒等。其中通过`provider`库来同步应用状态,`provider`的原理也是通过context来追溯组件的状态。registerNotification内部使用的context必须使用父级组件的context，即originCon。因为MyHomePage会因为状态的刷新而重建，但事件注册只会调用一次，如果使用yHomePage自己的context,在注册后组件重绘，调用相关事件的时候将会报无法找到context的错误。registerNotification内部注册了提醒弹出toast的逻辑，此处的toast的实现用到了上溯找到的MaterialApp的上下文，此处不能使用originCon，因为它是MyHomePage父组件的上下文，无法溯找到MaterialApp，直接使用会报错。  
+底部tab的我们通过BottomNavigationBarItem来实现，每个item绑定点击事件，点击时切换展示的组件，聊天列表、搜索和个人中心都通过单个的组件来实现，并不改变路由。  
+* 聊天页  
+在聊天列表页点击任意对话，即进入聊天页：  
+```
 ```
 
 
