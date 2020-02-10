@@ -47,6 +47,7 @@
 # 功能实现
 1. 应用初始化
 在打开app时，首先要进行初始化，请求相关接口，恢复持久化状态等。在main.dart文件的开头，进行如下操作：  
+> 为了避免文章充斥着大段具体业务代码影响阅读体验，本文的代码部分只会列举核心内容，部分常见逻辑和样式内容会省略，完整代码详见项目仓库  
 ```
 import 'global.dart';
 ...
@@ -59,7 +60,6 @@ void main() => Global.init().then((e) => runApp(MyApp(info: e)));
 library global;
 
 import 'dart:convert';
-import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 ...
 //  篇幅关系，省略部分包引用
@@ -203,11 +203,39 @@ class UserModle extends ProfileChangeNotifier {
   BuildContext toastContext;
 }
 ```
-为了在改变数据的时候能够同步更新UI，这里UserModel继承了ProfileChangeNotifier类，该类定义了notifyListeners方法，UserModel内部设置了各个属性的set和get方法，将读写操作代理到Global.profile上，同时劫持set方法，使得在更新模型的值的时候会自动触发notifyListeners函数，该函数负责更新UI和同步状态的修改到持久化的状态管理中。  
+为了在改变数据的时候能够同步更新UI，这里UserModel继承了ProfileChangeNotifier类，该类定义了notifyListeners方法，UserModel内部设置了各个属性的set和get方法，将读写操作代理到Global.profile上，同时劫持set方法，使得在更新模型的值的时候会自动触发notifyListeners函数，该函数负责更新UI和同步状态的修改到持久化的状态管理中。再具体的业务代码中，如果要改变model的状态值，可以参考如下代码：  
+```
+    if (key == 'avatar') {
+      Provider.of<UserModle>(context).avatar = '图片url';
+    }
+```
+这里通过provider包，根据提供的组件context,在组件树中上溯寻找最近的UserModle,并修改它的值。这里大家可能会抱怨，只是为了单纯读写一个值，前面居然要加如此长的一串内容，使用起来太不方便，为了解决这个问题，我们可以进行简单的封装,在global.dart文件中我们有如下的定义：
+```
+//  给其他widget做的抽象类，用来获取数据
+abstract class CommonInterface {
+  String cUser(BuildContext context) {
+    return Provider.of<UserModle>(context).user;
+  }
+  UserModle cUsermodal(BuildContext context) {
+    return Provider.of<UserModle>(context);
+  }
+  ...
+}
+```
+通过一个抽象类，将参数的前缀部分都封装起来，具体使用如下：
+```
+class testComponent extends State<FriendList> with CommonInterface {
+    ...
+    if (key == 'avatar') {
+      cUsermodal(context).avatar = '图片url';
+    }
+}
+```
 3. 路由管理  
 接下来我们继续梳理main.dart文件：
 ```
 class ContextContainer extends StatefulWidget {
+  //    后文中类似代码将省略
   @override
   _ContextContainerState createState() => _ContextContainerState();
 }
@@ -267,8 +295,7 @@ class _ListenContainerState extends State<ListenContainer> with CommonInterface 
 
 ```
 class LogIn extends StatefulWidget {
-  @override
-  _LogInState createState() => new _LogInState();
+    ...
 }
 
 class _LogInState extends State<LogIn> {
@@ -282,6 +309,7 @@ class _LogInState extends State<LogIn> {
 
   @override
   void initState() {
+    //  初始化用户名
     _unameController.text = Global.profile.user;
     if (_unameController.text != null) {
       _nameAutoFocus = false;
@@ -291,17 +319,10 @@ class _LogInState extends State<LogIn> {
 
   @override
   Widget build(BuildContext context){
-    //var gm = GmLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(
-        title: Container(
-          alignment: Alignment.center,
-          child: Text('登录'),
-        ),
-      ),
+      appBar: ...
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(16),
           child: Form(
             key: _formKey,
             autovalidate: true,
@@ -312,14 +333,6 @@ class _LogInState extends State<LogIn> {
                   autofocus: _nameAutoFocus,
                   //    定义TextFormField控制器
                   controller: _unameController,
-                  //    控制样式
-                  decoration: InputDecoration(
-                    //labelStyle: TextStyle(color: Colors.greenAccent),
-                    labelText: 'UserName',
-                    hintText: 'Enter your name',
-                    //hintStyle: TextStyle(color: Colors.red),
-                    prefixIcon: Icon(Icons.person)
-                  ),
                   //    校验器
                   validator: (v) {
                     return v.trim().isNotEmpty ? null : 'required userName';
@@ -329,17 +342,13 @@ class _LogInState extends State<LogIn> {
                   controller: _pwdController,
                   autofocus: !_nameAutoFocus,
                   decoration: InputDecoration(
-                    // labelStyle: TextStyle(color: Colors.greenAccent),
-                    // hintStyle: TextStyle(color: Colors.greenAccent),
-                    labelText: 'PassWord',
-                    hintText: 'Enter Password',
-                    prefixIcon: Icon(Icons.lock),
-                    //  控制密码是否展示
+                      ...
+                    //  控制密码是否展示的按钮
                     suffixIcon: IconButton(
                       icon: Icon(pwdShow ? Icons.visibility_off : Icons.visibility),
                       onPressed: () {
-                        setState(() {
-                        pwdShow = !pwdShow; 
+                            setState(() {
+                            pwdShow = !pwdShow; 
                         });
                       },
                     )
@@ -350,14 +359,12 @@ class _LogInState extends State<LogIn> {
                   },
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(top: 25),
                   child: ConstrainedBox(
-                    constraints: BoxConstraints.expand(height: 55),
+                    ...
                     //  登录按钮
                     child: RaisedButton(
-                      color: Theme.of(context).primaryColor,
+                      ...
                       onPressed: _onLogin,
-                      textColor: Colors.white,
                       child: Text('Login'),
                     ),
                   ),
@@ -395,14 +402,7 @@ class _LogInState extends State<LogIn> {
 继续回到我们的main.dart文件，主页的页面绘制内容如下：  
 ```
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.myK, this.originCon, this.toastContext})
-  : super(key: key);
-  //    标记聊天页的全局key
-  final GlobalKey<ChatState> myK;
-  final BuildContext originCon;
-  final BuildContext toastContext;
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
+    ...
 }
 
 class _MyHomePageState extends State<MyHomePage> with CommonInterface{
@@ -412,9 +412,7 @@ class _MyHomePageState extends State<MyHomePage> with CommonInterface{
   Widget build(BuildContext context) {
     registerNotification();
     return Scaffold(
-      appBar: AppBar(
-        title: TitleContent(index: _selectedIndex),
-      ),
+      appBar: ...
       body: MiddleContent(index: _selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
         items: <BottomNavigationBarItem>[
@@ -426,15 +424,8 @@ class _MyHomePageState extends State<MyHomePage> with CommonInterface{
                 Icon(Icons.find_in_page),
                 cUsermodal(context).friendRequest.length > 0 ? Positioned(
                   child: Container(
-                    width: 10,
-                    height: 10,
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      borderRadius: BorderRadius.circular(5),
-                    ),
+                      ...
                   ),
-                  left: 15,
-                  top: -2,
                 ) : null,
               ].where((item) => item != null).toList()
             ),
@@ -458,25 +449,15 @@ class _MyHomePageState extends State<MyHomePage> with CommonInterface{
     BuildContext rootContext = widget.originCon;
     UserModle newUserModel = cUsermodal(rootContext);
     Message mesArray = Provider.of<Message>(rootContext);
-    //  聊天信息
+    //  监听聊天信息
     if(!cMysocket(rootContext).hasListeners('chat message')) {
       cMysocket(rootContext).on('chat message', (msg) {
-        String owner = msg['owner'];
-        String message = msg['message'];
+        ...
         SingleMesCollection mesC = mesArray.getUserMesCollection(owner);
-        if (mesC.bothOwner == null) {
-          mesArray.addItemToMesArray(owner, newUserModel.user, message);
-        } else {
-          cMesArr(rootContext).addMessRecord(owner, new SingleMessage(owner, message, new DateTime.now().millisecondsSinceEpoch));
-        }
-        //  非聊天环境
-        if (widget.myK.currentState == null) {
-          cMesCol(rootContext, owner).rankMark('receiver', owner);
-        } else {
-          //  聊天环境
-          cMesCol(rootContext, owner).updateMesRank(cMysocket(rootContext), cUser(rootContext));
-          widget.myK.currentState.slideToEnd();
-        }
+        //  在消息列表中插入新的消息
+        ...
+        //  根据所处环境更新未读消息数
+        ...
         updateBadger(rootContext);
       });
     }
@@ -485,17 +466,10 @@ class _MyHomePageState extends State<MyHomePage> with CommonInterface{
       cMysocket(rootContext).on('system notification', (msg) {
         String type = msg['type'];
         Map message = msg['message'] == 'msg' ? {} : msg['message'];
+        //  注册事件的映射map
         Map notificationMap = {
           'NOT_YOUR_FRIEND': () { showToast('对方开启好友验证，本消息无法送达', cUsermodal(rootContext).toastContext); },
-          'NEW_FRIEND_REQ': () {
-            cUsermodal(rootContext).addFriendReq(message);
-          },
-          'REQ_AGREE': () {
-            if (cUsermodal(rootContext).friendsList.firstWhere((item) => item.user == message['userName'], orElse: () => null) == null) {
-              cUsermodal(rootContext).friendsListJson.insert(0, { 'userName': message['userName'], 'nickName': message['nickName'], 'avatar': message['avatar'] });
-              cUsermodal(rootContext).notifyListeners();
-            }
-          }
+           ...
         };
         notificationMap[type]();
       });
@@ -505,7 +479,6 @@ class _MyHomePageState extends State<MyHomePage> with CommonInterface{
 
 class MiddleContent extends StatelessWidget {
   MiddleContent({Key key, this.index}) : super(key: key);
-
   final int index;
 
   @override
@@ -520,11 +493,253 @@ class MiddleContent extends StatelessWidget {
 }
 ```
 查看MyHomePage的参数我们可以发现，这里从上级组件传递了两个BuildContext实例。每个组件都有自己的context，context就是组件的上下文，由此作为切入点我们可以遍历组件的子元素，也可以向上追溯父组件，每当组件重绘的时候，context都会被销毁然后重建。_MyHomePageState的build方法首先调用registerNotification来注册对服务器端发起的事件的响应，比如好友发来消息时，消息列表自动更新；有人发起好友申请时触发提醒等。其中通过`provider`库来同步应用状态,`provider`的原理也是通过context来追溯组件的状态。registerNotification内部使用的context必须使用父级组件的context，即originCon。因为MyHomePage会因为状态的刷新而重建，但事件注册只会调用一次，如果使用yHomePage自己的context,在注册后组件重绘，调用相关事件的时候将会报无法找到context的错误。registerNotification内部注册了提醒弹出toast的逻辑，此处的toast的实现用到了上溯找到的MaterialApp的上下文，此处不能使用originCon，因为它是MyHomePage父组件的上下文，无法溯找到MaterialApp，直接使用会报错。  
-底部tab的我们通过BottomNavigationBarItem来实现，每个item绑定点击事件，点击时切换展示的组件，聊天列表、搜索和个人中心都通过单个的组件来实现，并不改变路由。  
+底部tab的我们通过BottomNavigationBarItem来实现，每个item绑定点击事件，点击时切换展示的组件，聊天列表、搜索和个人中心都通过单个的组件来实现,由MiddleContent来包裹，并不改变路由。  
 * 聊天页  
 在聊天列表页点击任意对话，即进入聊天页：  
 ```
+class ChatState extends State<Chat> with CommonInterface {
+  ScrollController _scrollController = ScrollController(initialScrollOffset: 18000);
+
+  @override
+  Widget build(BuildContext context) {
+    UserModle myInfo = Provider.of<UserModle>(context);
+    String sayTo = myInfo.sayTo;
+    cUsermodal(context).toastContext = context;
+    //  更新桌面icon
+    updateBadger(context);
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text(cFriendInfo(context, sayTo).nickName),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.attach_file, color: Colors.white),
+            onPressed: toFriendInfo,
+          )
+        ],
+      ),
+      body: Column(children: <Widget>[
+          TalkList(scrollController: _scrollController),
+          ChatInputForm(scrollController: _scrollController)
+        ],
+      ),
+    );
+  }
+  //    点击跳转好友详情页
+  void toFriendInfo() {
+    Navigator.pushNamed(context, 'friendInfo');
+  }
+
+  void slideToEnd() {
+    _scrollController.jumpTo(_scrollController.position.maxScrollExtent + 40);
+  }
+}
 ```
+这里的结构相对简单，由TalkList和ChatInputForm分别构成聊天页和输入框，外围用Scaffold包裹，实现用户名展示和右上角点击icon，接下来我们来看看TalkList组件：
+```
+class _TalkLitState extends State<TalkList> with CommonInterface {
+  bool isLoading = false;
+
+  //    计算请求的长度
+  int get acculateReqLength {
+      //    省略业务代码
+      ...
+  }
+  //    拉取更多消息
+  _getMoreMessage() async {
+      //    省略业务代码
+      ...
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    SingleMesCollection mesCol = cTalkingCol(context);
+    return Expanded(
+            child: Container(
+              color: Color(0xfff5f5f5),
+              //    通过NotificationListener实现下拉操作拉取更多消息
+              child: NotificationListener<OverscrollNotification>(
+                child: ListView.builder(
+                  itemBuilder: (BuildContext context, int index) {
+                    //  滚动的菊花
+                    if (index == 0) {
+                        //  根据数据状态控制显示标志 没有更多或正在加载
+                        ...
+                    }
+                    return MessageContent(mesList: mesCol.message, rank:index);
+                  },
+                  itemCount: mesCol.message.length + 1,
+                  controller: widget.scrollController,
+                ),
+                //  注册通知函数
+                onNotification: (OverscrollNotification notification) {
+                  if (widget.scrollController.position.pixels <= 10) {
+                    _getMoreMessage();
+                  }
+                  return true;
+                },
+              )
+            )
+          );
+  }
+}
+```
+这里的关键是通过NotificationListener实现用户在下拉操作时拉取更多聊天信息，即分次加载。通过widget.scrollController.position.pixels来读取当前滚动列表的偏移值，当其小于10时即判定为滑动到顶部，此时执行_getMoreMessage拉取更多消息。  
+接下来我们查看ChatInputForm组件  
+```
+class _ChatInputFormState extends State<ChatInputForm> with CommonInterface {
+  TextEditingController _messController = new TextEditingController();
+  GlobalKey _formKey = new GlobalKey<FormState>();
+  bool canSend = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Form(
+        key: _formKey,
+        child: Container(
+            color: Color(0xfff5f5f5),
+            child: TextFormField(
+                ...
+                controller: _messController,
+                onChanged: validateInput,
+                //  发送摁钮
+                decoration: InputDecoration(
+                    ...
+                    suffixIcon: IconButton(
+                    icon: Icon(Icons.message, color: canSend ? Colors.blue : Colors.grey),
+                        onPressed: sendMess,
+                    )
+                ),
+            )
+        )
+    );
+  }
+
+  void validateInput(String test) {
+    setState(() {
+      canSend = test.length > 0;
+    });
+  }
+
+  void sendMess() {
+    if (!canSend) {
+      return;
+    }
+    //  想服务器发送消息，更新未读消息，并更新本地消息列表
+    ...
+    // 保证在组件build的第一帧时才去触发取消清空内容
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+        _messController.clear();
+    });
+    //  键盘自动收起
+    //FocusScope.of(context).requestFocus(FocusNode());
+    widget.scrollController.jumpTo(widget.scrollController.position.maxScrollExtent + 50);
+    setState(() {
+      canSend = false;
+    });
+  }
+}
+```
+这里用Form包裹TextFormField组件，通过注册onChanged方法来对输入内容进行校验，防止其为空，点击发送按钮后通过socket实例发送消息，列表滚动到最底部，并且清空当前输入框。  
+* 个人中心页  
+```
+class _MyAccountState extends State<MyAccount> with CommonInterface{
+  @override
+  Widget build(BuildContext context) {
+    String me = cUser(context);
+    return SingleChildScrollView(
+      child: Container(
+        constraints: BoxConstraints(minWidth: double.infinity),
+        decoration: BoxDecoration(
+          color: Color(0xf0eff5ff),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisSize: MainAxisSize.max,
+          children: <Widget>[
+            Container(
+              //    通用组件，展现用户信息
+              child: PersonInfoBar(infoMap: cUsermodal(context)),
+              margin: EdgeInsets.only(top: 15),
+            ),
+            //  展示昵称，头像，密码三个配置项
+            Container(
+              margin: EdgeInsets.only(top: 15),
+              child: Column(
+                children: <Widget>[
+                  ModifyItem(text: 'Nickname', keyName: 'nickName', owner: me),
+                  ModifyItem(text: 'Avatar', keyName: 'avatar', owner: me),
+                  ModifyItem(text: 'Password', keyName: 'passWord', owner: me, useBottomBorder: true)
+                ],
+              ),
+            ),
+            //  退出摁钮
+            Container(
+              child: GestureDetector(
+                child: Container(
+                  alignment: Alignment.center,
+                  margin: EdgeInsets.only(top: 45),
+                  constraints: BoxConstraints(
+                    minWidth: double.infinity,
+                    minHeight: 45
+                  ),
+                  decoration: BoxDecoration(
+                    color: Color(0xffffffff),
+                    border: Border(top: borderStyle, bottom: borderStyle)
+                  ),
+                  child: Text('Log Out', style: TextStyle(color: Colors.red)),
+                ),
+                onTap: quit,
+              ) 
+            )
+          ],
+        )
+      )
+    );
+  }
+
+  void quit() {
+    Provider.of<UserModle>(context).isLogin = false;
+  }
+}
+
+var borderStyle = BorderSide(color: Color(0xffd4d4d4), width: 1.0);
+
+class ModifyItem extends StatelessWidget {
+  ModifyItem({this.text, this.keyName, this.owner, this.useBottomBorder = false, });
+  final String text;
+  final String keyName;
+  final String owner;
+  final bool useBottomBorder;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      child: Container(
+        alignment: Alignment.centerLeft,
+        //  有了color就不能使用decoration属性，这二者二选一
+        //color: Color(0xffffffff),
+        constraints: BoxConstraints(
+          minWidth: double.infinity,
+          minHeight: 45
+        ),
+        decoration: BoxDecoration(
+          color: Color(0xffffffff),
+          border: Border(top: borderStyle, bottom: useBottomBorder ? borderStyle: BorderSide.none)
+        ),
+        padding: EdgeInsets.only(left: 10),
+        child: Text(text),
+      ),
+      onTap: () => modify(context, text, keyName, owner),
+    );
+  }
+}
+
+void modify(BuildContext context, String text, String keyName, String owner) {
+  Navigator.pushNamed(context, 'modify', arguments: {'text': text, 'keyName': keyName, 'owner': owner });
+}
+```
+
 
 
 
