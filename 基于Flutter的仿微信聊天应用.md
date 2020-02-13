@@ -203,7 +203,7 @@ class UserModle extends ProfileChangeNotifier {
   BuildContext toastContext;
 }
 ```
-为了在改变数据的时候能够同步更新UI，这里UserModel继承了ProfileChangeNotifier类，该类定义了notifyListeners方法，UserModel内部设置了各个属性的set和get方法，将读写操作代理到Global.profile上，同时劫持set方法，使得在更新模型的值的时候会自动触发notifyListeners函数，该函数负责更新UI和同步状态的修改到持久化的状态管理中。再具体的业务代码中，如果要改变model的状态值，可以参考如下代码：  
+为了在改变数据的时候能够同步更新UI，这里UserModel继承了ProfileChangeNotifier类，该类定义了notifyListeners方法，UserModel内部设置了各个属性的set和get方法，将读写操作代理到Global.profile上，同时劫持set方法，使得在更新模型的值的时候会自动触发notifyListeners函数，该函数负责更新UI和同步状态的修改到持久化的状态管理中。在具体的业务代码中，如果要改变model的状态值，可以参考如下代码：  
 ```
     if (key == 'avatar') {
       Provider.of<UserModle>(context).avatar = '图片url';
@@ -286,7 +286,7 @@ class _ListenContainerState extends State<ListenContainer> with CommonInterface 
   }
 }
 ```
-这里使用ContextContainer进行了一次组价包裹，是为了保证向服务器登记用户上线的逻辑仅触发一次，在ListenContainer的MaterialApp中，定义了应用中会出现的所有路由页，`/`代表根路由，在根路由下，根据用户的登录态来选择渲染的组件:MyHomePage是应用的主页面，里面包含好友列表页，搜索页和个人中心页以及底部的切页tab，LogIn则表示应用的登录页
+这里使用ContextContainer进行了一次组件包裹，是为了保证向服务器登记用户上线的逻辑仅触发一次，在ListenContainer的MaterialApp中，定义了应用中会出现的所有路由页，`/`代表根路由，在根路由下，根据用户的登录态来选择渲染的组件:MyHomePage是应用的主页面，里面包含好友列表页，搜索页和个人中心页以及底部的切页tab，LogIn则表示应用的登录页
 * 登录页：
 <div align=center>
 <img src="https://user-gold-cdn.xitu.io/2020/2/6/1701a8a9253485c5?w=1080&h=1920&f=png&s=70464" width="400" alt="image"/>
@@ -492,7 +492,7 @@ class MiddleContent extends StatelessWidget {
   }
 }
 ```
-查看MyHomePage的参数我们可以发现，这里从上级组件传递了两个BuildContext实例。每个组件都有自己的context，context就是组件的上下文，由此作为切入点我们可以遍历组件的子元素，也可以向上追溯父组件，每当组件重绘的时候，context都会被销毁然后重建。_MyHomePageState的build方法首先调用registerNotification来注册对服务器端发起的事件的响应，比如好友发来消息时，消息列表自动更新；有人发起好友申请时触发提醒等。其中通过`provider`库来同步应用状态,`provider`的原理也是通过context来追溯组件的状态。registerNotification内部使用的context必须使用父级组件的context，即originCon。因为MyHomePage会因为状态的刷新而重建，但事件注册只会调用一次，如果使用yHomePage自己的context,在注册后组件重绘，调用相关事件的时候将会报无法找到context的错误。registerNotification内部注册了提醒弹出toast的逻辑，此处的toast的实现用到了上溯找到的MaterialApp的上下文，此处不能使用originCon，因为它是MyHomePage父组件的上下文，无法溯找到MaterialApp，直接使用会报错。  
+查看MyHomePage的参数我们可以发现，这里从上级组件传递了两个BuildContext实例。每个组件都有自己的context，context就是组件的上下文，由此作为切入点我们可以遍历组件的子元素，也可以向上追溯父组件，每当组件重绘的时候，context都会被销毁然后重建。_MyHomePageState的build方法首先调用registerNotification来注册对服务器端发起的事件的响应，比如好友发来消息时，消息列表自动更新；有人发起好友申请时触发提醒等。其中通过`provider`库来同步应用状态,`provider`的原理也是通过context来追溯组件的状态。registerNotification内部使用的context必须使用父级组件的context，即originCon。因为MyHomePage会因为状态的刷新而重建，但事件注册只会调用一次，如果使用MyHomePage自己的context,在注册后组件重绘，调用相关事件的时候将会报无法找到context的错误。registerNotification内部注册了提醒弹出toast的逻辑，此处的toast的实现用到了上溯找到的MaterialApp的上下文，此处不能使用originCon，因为它是MyHomePage父组件的上下文，无法溯找到MaterialApp，直接使用会报错。  
 底部tab的我们通过BottomNavigationBarItem来实现，每个item绑定点击事件，点击时切换展示的组件，聊天列表、搜索和个人中心都通过单个的组件来实现,由MiddleContent来包裹，并不改变路由。  
 * 聊天页  
 在聊天列表页点击任意对话，即进入聊天页：  
@@ -584,7 +584,7 @@ class _TalkLitState extends State<TalkList> with CommonInterface {
   }
 }
 ```
-这里的关键是通过NotificationListener实现用户在下拉操作时拉取更多聊天信息，即分次加载。通过widget.scrollController.position.pixels来读取当前滚动列表的偏移值，当其小于10时即判定为滑动到顶部，此时执行_getMoreMessage拉取更多消息。  
+这里的关键是通过NotificationListener实现用户在下拉操作时拉取更多聊天信息，即分次加载。通过widget.scrollController.position.pixels来读取当前滚动列表的偏移值，当其小于10时即判定为滑动到顶部，此时执行_getMoreMessage拉取更多消息。这里详细解释下聊天功能的实现：消息的传递非常频繁，使用普通的http请求来实现是不现实的，这里通过dart端的socket.io来实现消息交换(类似于web端的webSocket,服务端就是用node上的socket.io server实现的)，当你发送消息时，首先会更新本地的消息列表，同时通过socket的实例向服务器发送消息，服务器收到消息后将接收到的消息转发给目标用户。目标用户在初始化app时，就会监听socket的相关事件，收到服务器的消息通知后，更新本地的消息列表。具体的过程比较繁琐，有很多实现细节，这里暂时略去，完整实现在源码中。  
 接下来我们查看ChatInputForm组件  
 ```
 class _ChatInputFormState extends State<ChatInputForm> with CommonInterface {
@@ -649,18 +649,14 @@ class _MyAccountState extends State<MyAccount> with CommonInterface{
     String me = cUser(context);
     return SingleChildScrollView(
       child: Container(
-        constraints: BoxConstraints(minWidth: double.infinity),
-        decoration: BoxDecoration(
-          color: Color(0xf0eff5ff),
-        ),
+        ...
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          mainAxisSize: MainAxisSize.max,
+          ...
           children: <Widget>[
             Container(
               //    通用组件，展现用户信息
               child: PersonInfoBar(infoMap: cUsermodal(context)),
-              margin: EdgeInsets.only(top: 15),
+              ...
             ),
             //  展示昵称，头像，密码三个配置项
             Container(
@@ -677,16 +673,7 @@ class _MyAccountState extends State<MyAccount> with CommonInterface{
             Container(
               child: GestureDetector(
                 child: Container(
-                  alignment: Alignment.center,
-                  margin: EdgeInsets.only(top: 45),
-                  constraints: BoxConstraints(
-                    minWidth: double.infinity,
-                    minHeight: 45
-                  ),
-                  decoration: BoxDecoration(
-                    color: Color(0xffffffff),
-                    border: Border(top: borderStyle, bottom: borderStyle)
-                  ),
+                  ...
                   child: Text('Log Out', style: TextStyle(color: Colors.red)),
                 ),
                 onTap: quit,
@@ -707,27 +694,13 @@ var borderStyle = BorderSide(color: Color(0xffd4d4d4), width: 1.0);
 
 class ModifyItem extends StatelessWidget {
   ModifyItem({this.text, this.keyName, this.owner, this.useBottomBorder = false, });
-  final String text;
-  final String keyName;
-  final String owner;
-  final bool useBottomBorder;
+  ...
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       child: Container(
-        alignment: Alignment.centerLeft,
-        //  有了color就不能使用decoration属性，这二者二选一
-        //color: Color(0xffffffff),
-        constraints: BoxConstraints(
-          minWidth: double.infinity,
-          minHeight: 45
-        ),
-        decoration: BoxDecoration(
-          color: Color(0xffffffff),
-          border: Border(top: borderStyle, bottom: useBottomBorder ? borderStyle: BorderSide.none)
-        ),
-        padding: EdgeInsets.only(left: 10),
+        ...
         child: Text(text),
       ),
       onTap: () => modify(context, text, keyName, owner),
@@ -739,6 +712,171 @@ void modify(BuildContext context, String text, String keyName, String owner) {
   Navigator.pushNamed(context, 'modify', arguments: {'text': text, 'keyName': keyName, 'owner': owner });
 }
 ```
+头部是一个通用的展示组件，用来展示用户名和头像，之后通过三个ModifyItem来展示昵称，头像和密码修改项，其上通过`GestureDetector`绑定点击事件，切换路由进入修改页。  
+* 个人信息修改页(昵称)
+效果图如下：  
+![](https://user-gold-cdn.xitu.io/2020/2/11/1703470bae0bb16b?w=587&h=290&f=jpeg&s=62626)
+```
+class NickName extends StatefulWidget {
+  NickName({Key key, @required this.handler, @required this.modifyFunc, @required this.target}) 
+    : super(key: key);
+  ...
+
+  @override
+  _NickNameState createState() => _NickNameState();
+}
+
+class _NickNameState extends State<NickName> with CommonInterface{
+  TextEditingController _nickNameController = new TextEditingController();
+  GlobalKey _formKey = new GlobalKey<FormState>();
+  bool _nameAutoFocus = true;
+
+  @override
+  Widget build(BuildContext context) {
+    String oldNickname = widget.target == cUser(context) ? cUsermodal(context).nickName : cFriendInfo(context, widget.target).nickName;
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Form(
+        key: _formKey,
+        autovalidate: true,
+        child: Column(
+          children: <Widget>[
+            TextFormField(
+              ...
+              validator: (v) {
+                var result = v.trim().isNotEmpty ? (_nickNameController.text != oldNickname ? null : 'please enter another nickname') : 'required nickname';
+                widget.handler(result == null);
+                widget.modifyFunc('nickName', _nickNameController.text);
+                return result;
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+这里的逻辑相对比较简单，一个简单的TextFormField，使用validator检验输入是否为空，是否同原来内容一致等等。修改密码的逻辑此处类似，不再赘述。  
+* 个人信息修改页(头像)  
+具体效果图如下：  
+<div align=center>
+<img src="https://user-gold-cdn.xitu.io/2020/2/11/170346d42981cf82?w=571&h=226&f=jpeg&s=43031" width="400" alt="image"/>
+</div>  
+选择好图片后，进入裁剪逻辑：  
+<div align=center>
+<img src="https://user-gold-cdn.xitu.io/2020/2/11/170347605ba0185d?w=1080&h=1920&f=jpeg&s=97271" width="400" alt="image"/>
+</div>  
+
+代码实现如下：  
+```
+import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
+import '../../tools/base64.dart';
+import 'package:image/image.dart' as img;
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
+
+class Avatar extends StatefulWidget {
+  Avatar({Key key, @required this.handler, @required this.modifyFunc}) 
+    : super(key: key);
+  final ValueChanged<bool> handler;
+  final modifyFunc;
+
+  @override
+  _AvatarState createState() => _AvatarState();
+}
+
+class _AvatarState extends State<Avatar> {
+  var _imgPath;
+  var baseImg;
+  bool showCircle = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: <Widget>[
+        SingleChildScrollView(child: imageView(context),) ,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: <Widget>[
+            RaisedButton(
+              onPressed: () => pickImg('takePhote'),
+              child: Text('拍照')
+            ),
+            RaisedButton(
+              onPressed: () => pickImg('gallery'),
+              child: Text('选择相册')
+            ),
+          ],
+        )
+      ],
+    );
+  }
+
+  Widget imageView(BuildContext context) {
+    if (_imgPath == null && !showCircle) {
+      return Center(
+        child: Text('请选择图片或拍照'),
+      );
+    } else if (_imgPath != null) {
+      return Center(
+          child: 
+          //    渐进的图片加载
+          FadeInImage(
+            placeholder: AssetImage("images/loading.gif"),
+            image: FileImage(_imgPath),
+            height: 375,
+            width: 375,
+          )
+      ); 
+    } else {
+      return Center(
+        child: Image.asset("images/loading.gif",
+          width: 375.0,
+          height: 375,
+        )
+      );
+    }
+  }
+
+  Future<String> getBase64() async {
+    //  生成图片实体
+    final img.Image image = img.decodeImage(File(_imgPath.path).readAsBytesSync());
+    //  缓存文件夹
+    Directory tempDir = await getTemporaryDirectory();
+    String tempPath = tempDir.path; // 临时文件夹
+    //  创建文件
+    final File imageFile = File(path.join(tempPath, 'dart.png')); // 保存在应用文件夹内
+    await imageFile.writeAsBytes(img.encodePng(image));
+    return 'data:image/png;base64,' + await Util.imageFile2Base64(imageFile);
+  }  
+
+  void pickImg(String action) async{
+    setState(() {
+      _imgPath = null;
+      showCircle = true;
+    });
+    File image = await (action == 'gallery' ? ImagePicker.pickImage(source: ImageSource.gallery) : ImagePicker.pickImage(source: ImageSource.camera));
+    File croppedFile = await ImageCropper.cropImage(
+        //  cropper的相关配置
+        ...
+    );
+    setState(() {
+      showCircle = false;
+      _imgPath = croppedFile;
+    });
+    widget.handler(true);
+    widget.modifyFunc('avatar', await getBase64());
+  }
+}
+```  
+该页面下首先绘制两个按钮，并给其绑定不同的事件，分别控制选择本地相册或者拍摄新的图片(使用`image_picker`)，具体通过`ImagePicker.pickImage(source: ImageSource.gallery)`与`ImagePicker.pickImage(source: ImageSource.camera))`来实现，该调用将返回一个file文件，而后通过`ImageCropper.cropImage`来进入裁剪操作，裁剪完成后将成品图片通过`getBase64`转换成base64字符串，通过post请求发送给服务器，从而完成头像的修改。  
+# 后记
+该项目只是涉及app端的相关逻辑，要正常运行还需要配合后端服务，具体逻辑可以参考笔者自己的[node服务器](https://github.com/dianluyuanli-wp/apiTest)，包含了常规http请求和websocket服务端的相关逻辑实现。   
+[本项目代码仓库](https://github.com/dianluyuanli-wp/IChat_For_Flutter)  
+如有任何疑问，欢迎留言交流~
+
 
 
 
