@@ -4,26 +4,18 @@
 1. 聊天列表
 本应用支持用户直接点对点聊天，使用webSocket实现消息提醒与同步
 好友列表页：  
-<div align=center>
-<img src="https://user-gold-cdn.xitu.io/2020/2/4/17010441cd5a3312?w=1080&h=1920&f=png&s=86788" width="400" alt="image"/>
-</div>
+![好友列表页](https://user-gold-cdn.xitu.io/2020/2/4/17010441cd5a3312?w=1080&h=1920&f=png&s=86788) 
 在聊天列表展示所有好友，点击进入聊天详情，未读消息通过好友头像右上角小红点表示。  
 聊天页：  
-<div align=center>
-<img src="https://user-gold-cdn.xitu.io/2020/2/4/170105ac0d97d6e2?w=1080&h=1920&f=png&s=222656" width="400" alt="image"/>
-</div>  
+![聊天页](https://user-gold-cdn.xitu.io/2020/2/4/170105ac0d97d6e2?w=1080&h=1920&f=png&s=222656)  
 
 2. 搜索页
 用户可以通过搜索添加好友：
-<div align=center>
-<img src="https://user-gold-cdn.xitu.io/2020/2/4/17010698be42dcb5?w=1080&h=1920&f=jpeg&s=108278" width="400" alt="image"/>
-</div>  
+![搜索页](https://user-gold-cdn.xitu.io/2020/2/4/17010698be42dcb5?w=1080&h=1920&f=jpeg&s=108278)   
 
 3. 个人中心页  
 该页面可以进行个人信息的修改，包括调整昵称，头像，修改密码等等,同时可以退出登录。
-<div align=center>
-<img src="https://user-gold-cdn.xitu.io/2020/2/4/170106db7e67384c?w=1080&h=1920&f=png&s=93536" width="400" alt="image"/>
-</div>  
+![个人中心页](https://user-gold-cdn.xitu.io/2020/2/4/170106db7e67384c?w=1080&h=1920&f=png&s=93536)  
 
 # 工具链梳理
 这里列举了本例中使用的几个关键第三方库，具体的使用细节在功能实现部分会有详解。
@@ -38,9 +30,7 @@
 这里使用`dio`进行网络请求，进行了简单的封装  
 4. 其他  
 * 手机桌面消息通知小红点通过`flutter_app_badger`包来实现，效果如下：  
-<div align=center>
-<img src="https://user-gold-cdn.xitu.io/2020/2/5/1701592c0ff20a41?w=274&h=287&f=jpeg&s=103108" width="400" alt="image"/>
-</div>  
+![小红点](https://user-gold-cdn.xitu.io/2020/2/5/1701592c0ff20a41?w=274&h=287&f=jpeg&s=103108)  
 
 * 修改用户头像时，获取本地相册或调用照相机，使用`image_picker`库来实现，图片的裁剪通过`image_cropper`库来实现  
 * 网络图片缓存，使用`cached_network_image`来完成，避免使用图片时反复调用http服务
@@ -288,9 +278,7 @@ class _ListenContainerState extends State<ListenContainer> with CommonInterface 
 ```
 这里使用ContextContainer进行了一次组件包裹，是为了保证向服务器登记用户上线的逻辑仅触发一次，在ListenContainer的MaterialApp中，定义了应用中会出现的所有路由页，`/`代表根路由，在根路由下，根据用户的登录态来选择渲染的组件:MyHomePage是应用的主页面，里面包含好友列表页，搜索页和个人中心页以及底部的切页tab，LogIn则表示应用的登录页
 * 登录页：
-<div align=center>
-<img src="https://user-gold-cdn.xitu.io/2020/2/6/1701a8a9253485c5?w=1080&h=1920&f=png&s=70464" width="400" alt="image"/>
-</div>  
+![登录页](https://user-gold-cdn.xitu.io/2020/2/6/1701a8a9253485c5?w=1080&h=1920&f=png&s=70464)  
 其代码在login.dart文件中：
 
 ```
@@ -760,13 +748,9 @@ class _NickNameState extends State<NickName> with CommonInterface{
 这里的逻辑相对比较简单，一个简单的TextFormField，使用validator检验输入是否为空，是否同原来内容一致等等。修改密码的逻辑此处类似，不再赘述。  
 * 个人信息修改页(头像)  
 具体效果图如下：  
-<div align=center>
-<img src="https://user-gold-cdn.xitu.io/2020/2/11/170346d42981cf82?w=571&h=226&f=jpeg&s=43031" width="400" alt="image"/>
-</div>  
+![选择页](https://user-gold-cdn.xitu.io/2020/2/11/170346d42981cf82?w=571&h=226&f=jpeg&s=43031)  
 选择好图片后，进入裁剪逻辑：  
-<div align=center>
-<img src="https://user-gold-cdn.xitu.io/2020/2/11/170347605ba0185d?w=1080&h=1920&f=jpeg&s=97271" width="400" alt="image"/>
-</div>  
+![裁剪页](https://user-gold-cdn.xitu.io/2020/2/11/170347605ba0185d?w=1080&h=1920&f=jpeg&s=97271)  
 
 代码实现如下：  
 ```
