@@ -1,9 +1,9 @@
 # 前言
 如果你不甘于做一个纯粹的页面仔，想了解一个web应用从编写到到发布到用户可见的全过程，或是想自己玩一点新东西，突破原有的技术圈层，那么本文将是一个很好的入门指南。笔者将从实战入手，尽可能细致地结合当前主流的工具链，以命令行为粒度来讲解一个web应用CI/CD的全过程。有些部分的内容可能过于基础，大神们可以酌情跳过。  
-本例的应用架构大致是:一个web静态中台服务，和与之配套的后端服务（通过node实现）。通过nginx部署静态文件（web网站），使用node部署一个后端服务。nginx将静态站和后端服务整合起来，通过80端口将服务暴露给用户。在工程层面使用jenkins持续集成。除了jenkins外，所有的服务都运行在docker容器中，方便快速部署。   
+本例的应用架构大致是:一个web静态中台服务，和与之配套的后端服务（通过node实现）。通过nginx部署静态文件（web网站），使用node部署一个后端服务。nginx将静态站和后端服务整合起来，通过81端口将服务暴露给用户。在工程层面使用jenkins持续集成。除了jenkins外，所有的服务都运行在docker容器中，方便快速部署。   
 
 # 虚拟机环境搭建
-笔者选择阿里云的ECS(Elastic Compute Service 弹性计算服务)作为虚拟机，其他公司的机器如腾讯云、亚马逊甚至搬瓦工(有境外需求)的vps(Virtual Private Server 虚拟专用服务器)也可参考如下内容，所谓的ECS或者vps都可以简单地理解为云主机上划分出来的一个个虚拟主机。  
+笔者选择阿里云的ECS(Elastic Compute Service 弹性计算服务)作为虚拟机，其他公司的机器如腾讯云、亚马逊甚至搬瓦工(有境外需求)的vps(Virtual Private Server 虚拟专用服务器)也可参考如下内容，所谓的ECS或者vps都可以简单地理解为厂商物理服务器上划分出来的一个虚拟主机。  
 ## 选择机器配置
 在阿里云官网选择ECS相关产品，在产品选购页面可以见到如下的内容：  
 ![](https://user-gold-cdn.xitu.io/2020/2/25/1707c7966ca507bd?w=1646&h=895&f=png&s=139598)
@@ -149,7 +149,7 @@ docker push username/名字
 docker run -itd --name node-test node  
 交互式已node为镜像创造一个后台运行的容器，名字叫node-test  
 
-Docker run –-name mynginx –d –p 80:80 –v /software/nginx/mynginx.conf:/etc/nginx/nginx.conf nginx  
+docker run –-name mynginx –d –p 80:80 –v /software/nginx/mynginx.conf:/etc/nginx/nginx.conf nginx  
 使用本地的nginx镜像创建一个nginx容器，-p 映射80端口，-v 挂载本地文件到etc也就是容器的文件夹下  
 
 ## docker进阶与nginx配置
@@ -308,48 +308,48 @@ docker pull nginx
 然后我们编写nginx配置文件myngnix.conf：
 ```
 events {
-  # 工作进程最大连接数量
+    # 工作进程最大连接数量
 	worker_connections 1024;
 }
 http {
-  # 定义静态文件支持的类型，否则在浏览器会出现文件类型解析错误，导致css无法解析等错误
+    # 定义静态文件支持的类型，否则在浏览器会出现文件类型解析错误，导致css无法解析等错误
 	include /etc/nginx/mime.types;
 	default_type application/octet-stream;
 
 	server {
-    # 监听的端口
+        # 监听的端口
 		listen 81;
-    # 你的云主机外网ip
+        # 你的云主机外网ip
 		server_name 你的云主机外网ip;
 
-    # 是否开启gzip压缩
+        # 是否开启gzip压缩
 		gzip on;
-    # 最小启用压缩的门限
+        # 最小启用压缩的门限
 		gzip_min_length 1k;
-    # 压缩等级，取值1-9，越小压的越厉害，但是越耗cpu
+        # 压缩等级，取值1-9，越小压的越厉害，但是越耗cpu
 		gzip_comp_level 9;
-    # 启用压缩的文件类型
+        # 启用压缩的文件类型
 		gzip_types text/plain application/javascript application/x-javascript text/css application/xml text/javascript application/x-httpd-php image/jpeg image/gif image/png;
-    # 启用应答头"Vary: Accept-Encoding"
+        # 启用应答头"Vary: Accept-Encoding"
 		gzip_vary on;
-    # 某些特定的ie浏览器不启用压缩
+        # 某些特定的ie浏览器不启用压缩
 		gzip_disable "MSIE [1-6]\.";
 
-    # 定义根目录，静态文件将依据其查找
+        # 定义根目录，静态文件将依据其查找
 		root /usr/share/nginx/html;
 
-    # 根目录下直接查找静态文件
+        # 根目录下直接查找静态文件
 		location / {
 			# 静态文件查找
 			try_files $uri $uri/ /index.html;
 
-			# 如果有资源，建议使用 https + http2，配合按需加载可以获得更好的体验
-			# rewrite ^/(.*)$ https://preview.pro.ant.design/$1 permanent;
+			  # 如果有资源，建议使用 https + http2，配合按需加载可以获得更好的体验
+			  # rewrite ^/(.*)$ https://preview.pro.ant.design/$1 permanent;
 
 		}
-    # api路由下的请求转发到node服务器
+        # api路由下的请求转发到node服务器
 		location /api {
-      # 转发到云主机的对应端口 proxy_pass 你的云主机内网地址:你的node容器连接到云主机的端口
+        # 转发到云主机的对应端口 proxy_pass 你的云主机内网地址:你的node容器连接到云主机的端口
 			proxy_pass xxx.xx.xxx.xx:3001;
 		}
 	}
@@ -358,7 +358,8 @@ http {
 nginx的配置博大精深，建议大致在官网或者默认的配置文件下浏览有哪些配置项，有哪些功能可以支持即可，等到真正有需求的时候再去找网上的帮助帖。上述的配置文件主要干了几件事：
 1. 开启gzip压缩
 2. 配置静态文件的根目录，部署静态网站
-3. 转发发送到服务的以/api开头的请求到我们的node docker容器(部署了后端服务)  
+3. 配置api请求转发。发送到niginx 服务器的以/api开头的请求，将会被转发到我们的node docker容器(部署了后端服务)  
+
 开启我们的nginx容器：
 ```
 docker run –-name mynginx –d –p 81:81 –v 你的配置文件路径/mynginx.conf:/etc/nginx/nginx.conf -v 你的外部静态文件目录:/usr/share/nginx/html nginx
@@ -421,7 +422,7 @@ services:
 ```
 ...
 		location /api {
-      # 这里不再填内网地址了，改成docker容器的名字
+            # 这里不再填内网地址了，改成docker容器的名字
 			proxy_pass http://newbackend:4000;
 		}
 ...
@@ -430,7 +431,7 @@ services:
 ```
 docker-compose up -d
 ```
-表示以守护进程的形式执行文件夹中的`docker-compose.yml`文件，完成后会自动运行容器。此时会构建一个组合镜像：
+表示以守护进程的形式执行文件夹中的`docker-compose.yml`文件，完成后会自动运行容器。此时会构建一个镜像：
 ```
 [root@iZj6cavaweeoyi3tqucik6Z dockerComposeNginx+Dash+back]# docker images
 REPOSITORY                              TAG                 IMAGE ID            CREATED             SIZE
