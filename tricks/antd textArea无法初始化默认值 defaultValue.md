@@ -23,7 +23,13 @@ useEffect(() => {
     </FormItem>
 </From>
 ```
-通过排查发现接口请求没有问题，使用hooks设置字符串的功能也正常，但就是无法设置textArea的默认值。甚至直接给TextArea的defaultValue和value写死字符串都无法生效。感觉可能是antd 4版本后的bug。为了解决问题，参考class实现下针对antd 表单组件的赋初始值方式：
+通过排查发现接口请求没有问题，使用hooks设置字符串的功能也正常，但就是无法设置textArea的默认值。甚至直接给TextArea的defaultValue和value写死字符串都无法生效。官网上有如下解释：
+```
+为什么 Form.Item 下的子组件 defaultValue 不生效？#  
+当你为 Form.Item 设置 name 属性后，子组件会转为受控模式。因而 defaultValue 不会生效。你需要在 Form 上通过 initialValues 设置默认值。
+```
+[相关链接](https://ant.design/components/form-cn/)。  
+可以参考官网的建议,或参考class实现下针对antd 表单组件的赋初始值方式：
 ```
     const { currentUser, form } = this.props;
     form.setFieldsValue(obj);
