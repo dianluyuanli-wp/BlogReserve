@@ -52,7 +52,7 @@ ReactDom.hydrate(
     mountNode
 );
 ```
-这里通过react的`context`语法，给我们的入口组件包裹一个`StyleContext`，便于后续子组件调用`insertCss`方法，`insertCss`又通过遍历所有的css文件，并执行内置的`_insertCss`(源码分析中会做分析),该方法负责实时在html文件中插入`style`标签以便跟新样式，该方法同时返回一个函数，用于在组件移除时同步删除样式标签。
+这里通过react的`context`语法，给我们的入口组件包裹一个`StyleContext`，便于后续子组件调用`insertCss`方法。`insertCss`遍历所有的css文件，并执行内置的`_insertCss`(源码分析中会做分析)方法,该方法负责实时在html文件中插入`style`标签以便跟新样式，该方法同时返回一个函数，用于在组件移除时同步删除样式标签。
 ## 后端渲染入口  
 后端渲染的入口文件也要做类似处理：
 ```js
@@ -69,11 +69,12 @@ function serverRender(res, template) {
         <ServerEntry />
       </StyleContext.Provider>
     );
+  //    返回模板被替换后的内容，这里将app标签替换成组件，style标签替换成所需的样式
   res.send(template.replace('<app></app>',appString).replace('<style></style>', `<style>${[...css].join('')}</style>`));
 }
 export default serverRender;
 ```
-这里的不同主要是在调用`insertCss`时，最后使用内置的`_getCss`来处理样式，同时定义了一个css`Set`,将后端渲染所需的所有样式搜集起来，最后在生成的html字符串中插入对应的style标签。
+这里的不同主要是在调用`insertCss`时，最后使用内置的`_getCss`来处理样式，同时定义了一个css `Set`,将后端渲染所需的所有样式搜集起来，最后在生成的html字符串中插入对应的style标签。
 ## 打包配置调整
 之后我们的项目打包文件也要有对应的调整，客户端打包配置`webpack.config.js`:
 ```js
@@ -107,7 +108,7 @@ module.exports = {
     mode:"production",
 }
 ```
-这里要补充下，如果使用`isomorphic-style-loader`的话就不要对css文件使用类似于`MiniCssExtractPlugin`这类具有文件提取功能的库了，否则会导致`isomorphic-style-loader`无法找到样式文件从而样式加载失败。`isomorphic-style-loader`server端的打包配置文件也类似，这里不再赘述。
+这里要补充下，如果使用`isomorphic-style-loader`的话就不要对css文件使用类似于`MiniCssExtractPlugin`这类具有文件提取功能的库了，否则会导致`isomorphic-style-loader`无法找到样式文件从而样式加载失败。`isomorphic-style-loader` server端的打包配置文件也类似，这里不再赘述。
 ## 实现效果
 之后我们运行项目，查看效果：  
 前端渲染：  
@@ -270,5 +271,114 @@ function withStyles(...styles) {
 
 export default withStyles
 ```
-`withStyles`的本质是返回一个高阶组件，原先的组件实例化的过程中完成在html中插入样式的工作，同时给组件注册卸载时的函数，负责将不使用的样式标签移除，更多细节详见代码注释。
+`withStyles`的本质是返回一个高阶组件，在该组件实例化的过程中完成在html中插入样式的工作，同时给组件注册卸载时运行的函数，这个函数负责将不使用的样式标签移除，更多细节详见代码注释。
+## Hook兼容写法 useStyles
+针对react的hooks api,也有对应的自定义hook:
+```js
+import { useContext, useEffect } from 'react'
+import StyleContext from './StyleContext'
+
+// To detect if it's in SSR process or in browser. Wrapping with
+// the function makes rollup's replacement of "this" avoidable
+// eslint-disable-next-line func-names
+const isBrowser = (function() {
+  return this && typeof this.window === 'object'
+})()
+
+function useStyles(...styles) {
+  //    获取context传递的insertCss
+  const { insertCss } = useContext(StyleContext)
+  if (!insertCss) throw new Error('Please provide "insertCss" function by StyleContext.Provider')
+  const runEffect = () => {
+    const removeCss = insertCss(...styles)
+    //  这里返回的是组件卸载时的回调，详见react hooks相关api
+    return () => {
+      setTimeout(removeCss, 0)
+    }
+  }
+  if (isBrowser) {
+    //  空数组作为第二个参数，表示不依赖任何参数，只在组件初始化时运行一次
+    useEffect(runEffect, [])
+  } else {
+    //  如果不是浏览器环境，不需要注册卸载回调
+    runEffect()
+  }
+}
+
+export default useStyles
+```
+hooks的实现相对简洁很多，逻辑清晰，组件初始化的时候调用`runEffect`, 运行`insertCss`, 将样式标签插入html,组件卸载时运行`useEffect`的回调。细节详见注释。  
+以上的页码解释了`isomorphic-style-loader`如何在client完成样式管理，那么在server端是如何处理的?我们在入口文件中调用的是`style._insertCss()`(客户端)或`style._getCss()`(服务器端)，这又是如何调用库里的相关函数的?要解答这些问题，我们还需要分析代码库的`index.js`文件，即`loader`相关处理逻辑。
+## loader处理逻辑
+包的`index.js`文件如下：
+```js
+import { stringifyRequest } from 'loader-utils'
+
+module.exports = function loader() {}
+module.exports.pitch = function pitch(request) {
+  if (this.cacheable) {
+    this.cacheable()
+  }
+
+  const insertCss = require.resolve('./insertCss.js')
+  return `
+    var refs = 0;
+    var css = require(${stringifyRequest(this, `!!${request}`)});
+    var insertCss = require(${stringifyRequest(this, `!${insertCss}`)});
+    var content = typeof css === 'string' ? [[module.id, css, '']] : css;
+
+    exports = module.exports = css.locals || {};
+    exports._getContent = function() { return content; };
+    exports._getCss = function() { return '' + css; };
+    exports._insertCss = function(options) { return insertCss(content, options) };
+
+    // Hot Module Replacement
+    // https://webpack.github.io/docs/hot-module-replacement
+    // Only activated in browser context
+    if (module.hot && typeof window !== 'undefined' && window.document) {
+      var removeCss = function() {};
+      module.hot.accept(${stringifyRequest(this, `!!${request}`)}, function() {
+        css = require(${stringifyRequest(this, `!!${request}`)});
+        content = typeof css === 'string' ? [[module.id, css, '']] : css;
+        removeCss = insertCss(content, { replace: true });
+      });
+      module.hot.dispose(function() { removeCss(); });
+    }
+  `
+}
+```
+为了回答之前的问题，需要简要介绍下webpack的`loader`机制。我们的浏览器本身能处理的文件类型非常有限，对于很多浏览器不能直接解析或者需要对能够解析的资源进行某些操作时，就需要一个辅助工具进行处理，这个工具就是loader。loader的处理顺序是从右到左的，即`use`对应的数组排列越靠后的loader越先处理，处理完后的文件将传递给后一个loader，以此类推。在`index.js`文件中我们看到其loader函数是空的，反而定义了`pitch`方法，在webpack中，`pitch`方法的处理顺序与`loader`方法的正好相反，越靠前的loader的pitch方法越先处理，所有的loader的pitch执行完毕后再会执行相关的loader方法，这里引用webpack官网的例子，假设有如下的loader:
+```
+use: [
+  'a-loader',
+  'b-loader',
+  'c-loader'
+]
+```
+那么其loader的执行顺序为：
+```
+|- a-loader `pitch`
+  |- b-loader `pitch`
+    |- c-loader `pitch`
+      |- requested module is picked up as a dependency
+    |- c-loader normal execution
+  |- b-loader normal execution
+|- a-loader normal execution
+```
+如果有某个loader的pitch返回了内容，那么将会跳过剩下的pitch和loader执行，从其上一级的loader开始执行，假设`b-loader`的pitch方法返回了具体内容，那么执行逻辑如下：
+```
+|- a-loader `pitch`
+  |- b-loader `pitch` returns a module
+|- a-loader normal execution
+```
+那么有部分读者可能会有疑问了，按照官方文档的逻辑，`isomorphic-style-loader`的pitch直接返回了内容，那岂不是直接跳过了后续`css-loader`的所有处理逻辑？pitch返回的字符串内容最终将会被用来生成js文件，如果其中含有`require`方法，那么`require`引用的文件将会走完之前被跳过的loader逻辑,由此者两部分的逻辑衔接起来。在返回的字符串中，我们看到其定义了`_getCss`和`_insertCss`等方法，这也就是在相关源码中定义的内置方法。在执行服务端渲染时，其后端渲染将用到的css代码直接返回，以便我们在后端渲染的入口文件中执行插入样式的逻辑。至此整个`isomorphic-style-loader`的逻辑完全走通。
+
+***
+[demo仓库位置点我](https://github.com/dianluyuanli-wp/isoStyleTest)  
+
+参考文献：  
+[isomorphic-style-loader npm链接](https://www.npmjs.com/package/isomorphic-style-loader)
+[webpack loader相关api](https://www.webpackjs.com/api/loaders/)  
+
+
 
