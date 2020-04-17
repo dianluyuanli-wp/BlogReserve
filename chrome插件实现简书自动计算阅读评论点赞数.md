@@ -24,7 +24,7 @@ const targetMap = {
 const compute = function(type) {
     const lable = targetMap[type];
     let count = 0;
-    //  ic-list-加上lable就是对应的类名
+    //  ic-list-加上lable就是对应的类名 依赖jquery
     $(`.ic-list-${lable}`).each(function(key, value) {
         //  jquery获取所有目标元素的父元素其中的html内容
         const parentNodeHtmlContent = $(this).parent().html();
@@ -66,3 +66,6 @@ let allFunc = async function() {
     $(window).scrollTop(originPositon);
 }
 ```
+以上是功能实现的核心代码，每次要计算机结果的时候如果都把以上脚本通过`injected script`的形式在chrome的dev tool里执行，过于繁琐，体验很差，为此我们引入chrome插件。
+# 插件开发
+有关插件开发的基础知识我这里不再赘述了，有一个大神有非常完备的[总结帖](https://www.cnblogs.com/liuxianan/p/chrome-plugin-develop.html)，看完之后全网的chrome插件教程除了官方文档，几乎都不用看了，墙裂推荐。这里我只体积我们要开发的这个插件需要的几个关键点。
