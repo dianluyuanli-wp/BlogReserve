@@ -2,11 +2,11 @@
 写博客也有一段时间了，不知道诸位是不是跟我一样在多个平台都有同步博文，笔者目前在掘金、csdn和简书都有在同步文章，这个过程中发现一个问题，简书官方没有统计作者所有博文的总阅读、评论、点赞等数据，只是给出了每篇文章的对应数据，这对于习惯了在各个平台上查看数据的笔者来说十分不友好（看着博客阅读数上涨是更新的巨大动力），为此笔者决定通过技术手段解决这个问题。
 # 思考解决思路
 要解决这个难点，最直观的思路自然是扒接口，如果官方有暴露对应的api的话，那一切都简单了。点开浏览器查看对应的`xhr`请求：
-![](https://user-gold-cdn.xitu.io/2020/4/16/17180b606fa011ad?w=875&h=277&f=png&s=37703)
+![](https://user-gold-cdn.xitu.io/2020/4/16/17180b606fa011ad?w=875&h=277&f=png&s=37703)  
 首屏的请求逐个点开看，发现没有一个有相关信息的。接着我们查看服务器返回的HTML文件：
-![](https://user-gold-cdn.xitu.io/2020/4/16/17180ba316cbea06?w=989&h=778&f=png&s=112349)
+![](https://user-gold-cdn.xitu.io/2020/4/16/17180ba316cbea06?w=989&h=778&f=png&s=112349)  
 发现简书个人中心页使用了后端渲染，每篇文章的内容都是server直出的，首次返回的html里只有首屏会显示的文章，后续的文章是怎么加载的呢?我们滚动scroll,观察接口：
-![](https://user-gold-cdn.xitu.io/2020/4/16/17180c5b1cacf17e?w=987&h=712&f=png&s=94221)
+![](https://user-gold-cdn.xitu.io/2020/4/16/17180c5b1cacf17e?w=987&h=712&f=png&s=94221)  
 我们发现在滚动之后，浏览器会自动请求新的内容，然后添加在之前渲染的内容末尾，每篇文章的相关数据都是由服务器计算好之后直出的，并没有暴露出对应的api。看来要解决这个问题只有通过最`"笨"`但是有效的DOM查询大法了。
 # 实战操作
 ## 页面Dom搜寻法
@@ -28,7 +28,7 @@ const compute = function(type) {
     $(`.ic-list-${lable}`).each(function(key, value) {
         //  jquery获取所有目标元素的父元素其中的html内容
         const parentNodeHtmlContent = $(this).parent().html();
-        //  替换调html内容中我们不感兴趣的部分，只获取数字并求和
+        //  替换掉html内容中我们不感兴趣的部分，只获取数字并求和
         count += parseInt(parentNodeHtmlContent.replace(`<i class="iconfont ic-list-${lable}"></i>`, ''));
     });
     return count;
@@ -67,10 +67,10 @@ let allFunc = async function() {
 }
 ```
 ## api内容搜寻法
-通过上述的方法我们实现了页面数据的统计，但是方法实在笨重，要通过页面滚动加载完用户所有的文章之后在统计页面的dom,而且页面滚动时的`setTimeout`时间不好把握，时间过短在低网速情况下可能会导致页面没有加载新的内容后就开始页面长度比较，导致滚动操作提前停止，时间过长则会拉长等待时间，体验也不好。那有没有更佳的解决方案呢?观察页面滚动时的加载流程我们发现，页面是通过`https://www.jianshu.com/u/xxx?order_by=shared_at&page=数字`这个get请求来拉取新的页面内容的，那我们直接调用这个api,在返回的html文件中查找我们需要的信息不就可以了?接下来的问题是如何确定已经拉取了所有内容，通过实践发现，当拉取的页数超过用户发布的所有文章数时，返回的html将会自动切换到用户动态页：
+通过上述的方法我们实现了页面数据的统计，但是方法实在笨重，要通过页面滚动加载完用户所有的文章之后，再统计页面的dom,而且页面滚动时的`setTimeout`时间不好把握，时间过短在低网速情况下可能会导致页面没有加载新的内容后就开始页面长度比较，导致滚动操作提前停止，时间过长则会拉长等待时间，体验也不好。那有没有更佳的解决方案呢?观察页面滚动时的加载流程我们发现，页面是通过`https://www.jianshu.com/u/xxx?order_by=shared_at&page=数字`这个get请求来拉取新的页面内容的，那我们直接调用这个api,在返回的html文件中查找我们需要的信息不就可以了?接下来的问题是如何确定已经拉取了所有内容，通过实践发现，当拉取的页数超过用户发布的所有文章数时，返回的html将会自动切换到用户动态页：
 ![](https://user-gold-cdn.xitu.io/2020/4/19/17190383a58fcb33?w=1762&h=743&f=png&s=238027)
 (以笔者的博客为例，博客文章一共有三页，请求到第四页时，返回的是`动态`页的内容)  
-我们可以通过分析`动态页`的html特征，确认之前文章请求结束。具体代码如下：
+我们可以通过分析`动态页`的html特征，确认之前文章列表请求结束。具体代码如下：
 ```js
 //  简单封装的get请求，返回promise
 const getApiPromise = function(url) {
@@ -126,7 +126,7 @@ const countThroughApi = async function() {
     return ansString;
 }
 ```
-以上是功能实现两种方法。每次要计算机结果的时候如果都把以上脚本通过`injected script`的形式在chrome的dev tool里执行，过于繁琐，体验很差，为此我们需要引入chrome插件。
+以上是功能实现两种方法。每次要计算结果的时候如果都把以上脚本通过`injected script`的形式在chrome的dev tool里执行，过于繁琐，体验很差，为此我们需要引入chrome插件。
 # 插件开发
 有关插件开发的基础知识我这里不再赘述了，有一个大神有非常完备的[总结帖](https://www.cnblogs.com/liuxianan/p/chrome-plugin-develop.html)，看完之后全网的chrome插件教程除了官方文档，几乎都不用看了，墙裂推荐。笔者的代码仓库地址会放在文末，这里笔者只提及我们要开发的这个插件需要的几个关键点。  
 ## manifest.json文件
@@ -139,7 +139,7 @@ const countThroughApi = async function() {
     },
     //  前台执行的js
     "content_scripts": [{
-        //  脚本生效的rul
+        //  脚本生效的url,只有在用户页下才可以统计
         "matches": [
             "http://www.jianshu.com/u/*",
             "https://www.jianshu.com/u/*"
@@ -173,7 +173,7 @@ function sendMessageToContentScript(message, callback)
 //  给页面创建右键菜单
 chrome.contextMenus.create({
     title: "计算浏览数-by页面滚动统计Dom",
-    //  设置匹配的url
+    //  设置匹配的url，在用户页下载才创建右键菜单
     documentUrlPatterns: ['https://www.jianshu.com/u/*'],
 	onclick: function(){
         //  发送通信消息
@@ -231,7 +231,7 @@ chrome.runtime.onMessage.addListener(async function(request, sender, sendRespons
 可以看到右上角插件图标亮起，表示可用，右键鼠标，出现两种计算方法的选项，点击任意一种，开始统计:
 ![](https://user-gold-cdn.xitu.io/2020/4/19/1719057f9abc457a?w=765&h=641&f=png&s=99383)
 
-[项目地址]()
+[项目地址](https://github.com/dianluyuanli-wp/functionScript/tree/master/JPlugin)
 # 参考文献
-[大神的chrome插件详细攻略](https://www.cnblogs.com/liuxianan/p/chrome-plugin-develop.html)  
+[小茗大神的chrome插件详细攻略](https://www.cnblogs.com/liuxianan/p/chrome-plugin-develop.html)  
 [chrome extension 官方文档](https://developer.chrome.com/extensions)
