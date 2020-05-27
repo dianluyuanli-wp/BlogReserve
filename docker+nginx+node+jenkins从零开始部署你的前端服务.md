@@ -411,8 +411,9 @@ services:
         - 你的nginx配置文件目录/compose.conf:/etc/nginx/nginx.conf:ro
         - 你的静态文件目录:/usr/share/nginx/html
     ports:
-    # 定义端口映射
-      - "81:80"
+    # 定义端口映射 前一个是外网端口，后一个是nginx监听的端口
+    # 将外网的81端口映射到nginx的81上
+      - "80:81"
     links:
     # 定义容器间的链接
       - newbackend
