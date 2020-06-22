@@ -1,7 +1,7 @@
 # 前言
 作为一个前端页面仔和需求粉碎机，在日常的工作中重复雷同的业务需求，能够获得的提高是很有限的。要想跳出此山中，开阔新视野，笔者墙裂建议大家阅读市面上顶尖开源库的源码。这是学习和掌握js语言特性的绝佳机会(前端发展到现在，大型应用高度依赖框架，正常情况下普通开发者是没有机会接触底层的语言特性)，同时也是深刻理解框架底层思维的契机。这里笔者选择`react`第一个开刀，市面上不少关于react源码分析的文章要么过于老旧，要么只截取部分代码或者是伪代码，笔者这里将选取react的16.8.6版本作为示例，从第0行开始，不漏过任何一个源码细节，和大家分享笔者在源码阅读过程中的体会。希望和大家共同进步，本系列博文中涉及的源码本人会放在git仓库中，链接在文末。
 # 正文
-在这一篇中，我们将聚焦react虚拟DOM实现的核心，`componetn`和`element`的定义。
+在这一篇中，我们将聚焦react虚拟DOM实现的核心，`component`的定义。
 1. component和PureComponent定义
 ```js
 /**
@@ -515,4 +515,4 @@ function defineRefPropWarningGetter(props, displayName) {
 仓库地址：  
 [react16.8.3源码注释仓库](https://github.com/dianluyuanli-wp/reactSourceCodeAnalyze)  
 下一篇：  
-[施工中](https://www.webpackjs.com/api/loaders/)  
+[施工中]()  

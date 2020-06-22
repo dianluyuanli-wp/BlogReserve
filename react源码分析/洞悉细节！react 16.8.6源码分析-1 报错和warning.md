@@ -99,7 +99,7 @@ function getIteratorFn(maybeIterable) {
 var validateFormat = function () {};
 
 {
-  //  处理错误信息需要格式，没有格式的话抛错，格式可以李继伟一个字符串模板
+  //  处理错误信息需要格式，没有格式的话抛错，格式可以理解为一个字符串模板
   validateFormat = function (format) {
     if (format === undefined) {
       throw new Error('invariant requires an error message argument');
@@ -140,6 +140,11 @@ function invariant(condition, format, a, b, c, d, e, f) {
 //  依靠对invariant的实现，我们可以保持格式和参数在web的构建中
 // Relying on the `invariant()` implementation lets us
 // preserve the format and params in the www builds.
+
+//  这里的warning实现是从fbjs/warning forked来的
+//  唯一的不同时我们使用console.warn而不是console.error,当没有原生console实现是我们啥也不做，这就是简化后的代码
+//  这个和invariant十分类似，唯一的不同是在条件不满足时我们将打印warning
+//  这个可以在开发环境中打印报错的绝对路径。在生产环境下移除log代码将会保持同样的逻辑并且维持同样的代码路径
 
 /**
  * Forked from fbjs/warning:
@@ -393,4 +398,4 @@ var emptyObject = {};
 仓库地址：  
 [react16.8.3源码注释仓库](https://github.com/dianluyuanli-wp/reactSourceCodeAnalyze)  
 下一篇：  
-[施工中](https://www.webpackjs.com/api/loaders/)  
+[洞悉细节！react 16.8.6源码分析-2 组件构造与获取调用栈]()  
