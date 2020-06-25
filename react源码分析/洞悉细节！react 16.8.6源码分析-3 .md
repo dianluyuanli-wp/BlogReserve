@@ -202,8 +202,211 @@ function createElement(type, config, children) {
   return ReactElement(type, key, ref, self, source, ReactCurrentOwner.current, props);
 }
 ```
-创建一个ReactElement时，首先根据config中的值，依次给`key`,`ref`，`ref`,`source`赋值，然后将congfig中的其他属性依次赋值给props(前提是非react属性保留字`RESERVED_PROPS`中的属性，定义在上一篇[洞悉细节！react 16.8.6源码分析-2 组件构造与获取调用栈]()),接下来将children赋值给props。接下来将传入的`type`上面的默认属性赋值给props。然后针对`key`和`ref`这两个属性设置取值报警。最后调用`ReactElement`来构造元素。
+创建一个ReactElement时，首先根据config中的值，依次给`key`,`ref`，`ref`,`source`赋值，然后将congfig中的其他属性依次赋值给props(前提是非react属性保留字`RESERVED_PROPS`中的属性，定义在上一篇[洞悉细节！react 16.8.6源码分析-2 组件构造与获取调用栈]()),接下来将children赋值给props。接下来将传入的`type`上面的默认属性赋值给props。然后针对`key`和`ref`这两个属性设置取值报警。最后调用`ReactElement`来构造元素。这里我们截取一个react组件console后的结果。  
+![](https://user-gold-cdn.xitu.io/2020/6/25/172eab24c2a0c545?w=690&h=167&f=png&s=10951)  
 
+3. react元素克隆
+```js
+//  返回一个可以创建指定类型的react元素的函数
+/**
+ * Return a function that produces ReactElements of a given type.
+ * See https://reactjs.org/docs/react-api.html#createfactory
+ */
+
+//  克隆并且替换key
+function cloneAndReplaceKey(oldElement, newKey) {
+  //  其实就是替换调key,其他不变
+  var newElement = ReactElement(oldElement.type, newKey, oldElement.ref, oldElement._self, oldElement._source, oldElement._owner, oldElement.props);
+
+  return newElement;
+}
+
+//  克隆并返回一个新的react元素，目标元素将作为起始点
+/**
+ * Clone and return a new ReactElement using element as the starting point.
+ * See https://reactjs.org/docs/react-api.html#cloneelement
+ */
+function cloneElement(element, config, children) {
+  //  如果element是null或者undefined，抛出不可用的错误
+  !!(element === null || element === undefined) ? invariant(false, 'React.cloneElement(...): The argument must be a React element, but you passed %s.', element) : void 0;
+  //  属性名
+  var propName = void 0;
+
+  // Original props are copied
+  //  复制原始属性
+  var props = _assign({}, element.props);
+
+  // Reserved names are extracted
+  //  受保护的属性被单独提取出来
+  var key = element.key;
+  var ref = element.ref;
+  //  self受保护是因为owner受保护
+  // Self is preserved since the owner is preserved.
+  var self = element._self;
+  //  source受保护是因为克隆一个元素并不是一个转译操作，原始的源对真实的父元素来说可能是一个更好的标志
+  // Source is preserved since cloneElement is unlikely to be targeted by a
+  // transpiler, and the original source is probably a better indicator of the
+  // true owner.
+  var source = element._source;
+
+  // Owner will be preserved, unless ref is overridden
+  //  owner将会被保护，除非ref被复写
+  var owner = element._owner;
+
+  if (config != null) {
+    //  如果存在config,那么其中的值将会覆盖刚才定义的变量
+    if (hasValidRef(config)) {
+      // Silently steal the ref from the parent.
+      //  静默封装从父元素存底来的ref
+      ref = config.ref;
+      //  修改owner
+      owner = ReactCurrentOwner.current;
+    }
+    if (hasValidKey(config)) {
+      key = '' + config.key;
+    }
+
+    // Remaining properties override existing props
+    //  剩下的属性将会复现现存的属性
+    var defaultProps = void 0;
+    if (element.type && element.type.defaultProps) {
+      //  element.type上的默认属性赋值给defaultProps
+      defaultProps = element.type.defaultProps;
+    }
+    //  属性复制
+    for (propName in config) {
+      //  如果该属性是config自有的并且不是react的保留属性
+      if (hasOwnProperty.call(config, propName) && !RESERVED_PROPS.hasOwnProperty(propName)) {
+        //  如果config中没有值并且默认属性的值存在就从默认属性中赋值
+        if (config[propName] === undefined && defaultProps !== undefined) {
+          // Resolve default props
+          props[propName] = defaultProps[propName];
+        } else {
+          //  否则复制config中的值
+          props[propName] = config[propName];
+        }
+      }
+    }
+  }
+
+  // Children can be more than one argument, and those are transferred onto
+  // the newly allocated props object.
+  //  复制子元素，逻辑类似先前
+  //  children挂在props上，透传
+  var childrenLength = arguments.length - 2;
+  if (childrenLength === 1) {
+    props.children = children;
+  } else if (childrenLength > 1) {
+    var childArray = Array(childrenLength);
+    for (var i = 0; i < childrenLength; i++) {
+      childArray[i] = arguments[i + 2];
+    }
+    props.children = childArray;
+  }
+
+  return ReactElement(element.type, key, ref, self, source, owner, props);
+}
+```
+这里的核心逻辑是将原始元素内部的`_source`,`_self`,`_owner`等属性依次赋给`source`,`self`,`owner`,将它们传给`ReactElement`，内部还进行了属性复制，子元素复制等等操作。
+
+4. reactElement元素验证与元素遍历池上下文维护
+```js
+//  判断一个对象是否是react元素
+/**
+ * Verifies the object is a ReactElement.
+ * See https://reactjs.org/docs/react-api.html#isvalidelement
+ * @param {?object} object
+ * @return {boolean} True if `object` is a ReactElement.
+ * @final
+ */
+//  首先是对象，其次不是null，再次$$typeoff为REACT_ELEMENT_TYPE
+function isValidElement(object) {
+  return typeof object === 'object' && object !== null && object.$$typeof === REACT_ELEMENT_TYPE;
+}
+
+var SEPARATOR = '.';
+var SUBSEPARATOR = ':';
+
+//  提取并且包裹key，使他可以用为reactid
+/**
+ * Escape and wrap key so it is safe to use as a reactid
+ *
+ * @param {string} key to be escaped.
+ * @return {string} the escaped key.
+ */
+//  替换key
+function escape(key) {
+  var escapeRegex = /[=:]/g;
+  var escaperLookup = {
+    '=': '=0',
+    ':': '=2'
+  };
+  var escapedString = ('' + key).replace(escapeRegex, function (match) {
+    return escaperLookup[match];
+  });
+  //  开头贴个$,=和冒号分别变成=0和=2
+  return '$' + escapedString;
+}
+
+/**
+ * TODO: Test that a single child and an array with one item have the same key
+ * pattern.
+ */
+
+ // 关于映射的警告
+ // 控制这种报错只出现一次
+var didWarnAboutMaps = false;
+
+//  匹配一个或多个/符号 给所有的/符号加一个/
+var userProvidedKeyEscapeRegex = /\/+/g;
+function escapeUserProvidedKey(text) {
+  //  $&表示之前匹配中的串
+  return ('' + text).replace(userProvidedKeyEscapeRegex, '$&/');
+}
+//  
+
+//  维护一个池子  这玩意儿感觉是共用的，每次调用的时候把函数往下传，或者返回一个空的
+var POOL_SIZE = 10;
+var traverseContextPool = [];
+//  获得合并的传递的上下文
+//  mapResult其实是处理过后的子元素的数组
+function getPooledTraverseContext(mapResult, keyPrefix, mapFunction, mapContext) {
+  //  如果有上下文，返回最后一个
+  if (traverseContextPool.length) {
+    var traverseContext = traverseContextPool.pop();
+    //  将相应的值改成传入的值
+    traverseContext.result = mapResult;
+    traverseContext.keyPrefix = keyPrefix;
+    traverseContext.func = mapFunction;
+    traverseContext.context = mapContext;
+    traverseContext.count = 0;
+    return traverseContext;
+  } else {
+    //  否则根据入参返回一个新的
+    return {
+      result: mapResult,
+      keyPrefix: keyPrefix,
+      func: mapFunction,
+      context: mapContext,
+      count: 0
+    };
+  }
+}
+
+//  释放一个上下文，小于上限的话就往池子里push
+function releaseTraverseContext(traverseContext) {
+  traverseContext.result = null;
+  traverseContext.keyPrefix = null;
+  traverseContext.func = null;
+  traverseContext.context = null;
+  traverseContext.count = 0;
+  //  小于上限的话就往里推
+  if (traverseContextPool.length < POOL_SIZE) {
+    traverseContextPool.push(traverseContext);
+  }
+}
+```
+判断一个元素是否是react元素，核心是根据`$$typeof`这个属性来判断，然后是`escape`函数，react内部通过这个函数生成安全的reactid,将`=`和`:`分别替换为`=0`和`=2`,然后将开头拼接上`$`成为reactid。之后定义了一个数组，作为遍历元素时的上下文堆栈，然后定义`getPooledTraverseContext`，来获取遍历元素时的上下文。  
 
 未完待续......
 
@@ -211,5 +414,7 @@ function createElement(type, config, children) {
 出于篇幅考虑，本篇的源码分析就告一段落，下一篇出炉时链接将同步在这里。有什么错漏欢迎评论区讨论，关于官方注释的翻译有不妥当之处也请指出~  
 仓库地址：  
 [react16.8.3源码注释仓库](https://github.com/dianluyuanli-wp/reactSourceCodeAnalyze)  
+上一篇：  
+[洞悉细节！react 16.8.6源码分析-2 组件构造与获取调用栈]()  
 下一篇：  
 [洞悉细节！react 16.8.6源码分析-2 组件构造与获取调用栈]()  
