@@ -515,4 +515,4 @@ function defineRefPropWarningGetter(props, displayName) {
 仓库地址：  
 [react16.8.3源码注释仓库](https://github.com/dianluyuanli-wp/reactSourceCodeAnalyze)  
 下一篇：  
-[施工中]()  
+[洞悉细节！react 16.8.6源码分析-3 元素创建]()  
