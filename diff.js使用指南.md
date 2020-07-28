@@ -38,7 +38,7 @@ const jsDiff = require('diff');
 * `JsDiff.diffSentences(oldStr, newStr[, options])` 比较两段文字，比较的维度是句子。返回一个由描述改变的对象组成的列表。实例截图：  
 ![](https://user-gold-cdn.xitu.io/2020/7/26/17389073a67959ec?w=1112&h=438&f=png&s=29346)  
 
-* `JsDiff.diffCss(oldStr, newStr[, options])` 比较两段内容，基于css中的相关符号和语法。返回一个由描述改变的对象组成的列表。
+* `JsDiff.diffCss(oldStr, newStr[, options])` 比较两段内容，比较基于css中的相关符号和语法。返回一个由描述改变的对象组成的列表。
 
 * `JsDiff.diffJson(oldObj, newObj[, options])` 比较两个JSON对象，比较基于对象内部的key。这些key在json对象内的顺序，在比较时将不会影响结果。返回一个由描述改变的对象组成的列表。展示一个例子:  
 ![](https://user-gold-cdn.xitu.io/2020/7/26/1738911184274497?w=1132&h=862&f=png&s=51112)  
@@ -83,3 +83,41 @@ const jsDiff = require('diff');
 * `value`: 文本内容  
 * `added`: 如果是文本被插入新内容的话，该值为true  
 * `removed`: 如果是文本被移除内容的话，该值为true  
+
+## 使用小结
+上述的内容主要是基于官方的文档。这里结合笔者的实战经验来说说使用的细节。`JsDiff`的方法绝大多数的入参都是字符串（除了`JsDiff.diffJson`,`JsDiff.diffArrays`等少数几个api）。用于比较字符，单词，句子或者文本文件时，需要将以上内容都转换成字符串，句子或者文本文件默认使用`\n`作为分隔符。输出通常是描述变化的对象组成的Array,方便二次开发，如果只是想简单输出文件之间的diff,可以直接使用`JsDiff.createTwoFilesPatch`支持输出格式化的内容，不用额外处理。关于二次开发输出满足需求的样式，这里给一个简单的例子：
+```js
+import React from 'react';
+const jsDiff = require('diff');
+import s from './index.css';
+import cx from 'classnames';
+
+const str1 = 'guanlanluditie';
+const str2 = 'smartguanlanluditie';
+const diffArr = jsDiff.diffChars(str1, str2);
+
+const charColorMap = {
+    'add': s.charAdd,
+    'removed': s.charRemoved,
+}
+
+export default class Text extends React.Component {
+    render() {
+        return <div className={s.result}>
+            比较结果: 
+            {diffArr.map((item, index) => {
+                const { value, added, removed } = item;
+                const type = added ? 'add' : (removed ? 'removed' : '')
+                return <span key={index} className={cx(charColorMap[type], s.charPreWrap)}>{value}</span>
+                })
+            }
+        </div>
+    }
+}
+```
+关于使用`diff`库实现类似于`github`的文件diff效果，可以参考笔者的一个仓库,也就是上文中的演示代码，[仓库地址](),具体的实现思路后续会出一篇文详述，稍候。
+
+# 参考资料与相关链接
+[diff库官方文档](https://www.npmjs.com/package/diff)  
+[演示站点]()  
+[演示站点代码仓库]()
