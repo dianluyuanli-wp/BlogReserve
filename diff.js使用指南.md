@@ -1,5 +1,5 @@
 # 前言
-最近在开发过程中遇到了需要diff文件内容或者大json的业务场景，发现了一个比较好用且经典的js库[diff](https://www.npmjs.com/package/diff)。这个库功能十分强大，不仅能够简洁地输出字符串结果，也能够输出规范化的结构方便二次开发。这里笔者针对这个库的文档进行文档翻译和简单的讲解，同时也会展示自己的测试demo。
+最近在开发过程中遇到了需要diff文件内容或者大json的业务场景，发现了一个比较好用且经典的js库[diff](https://www.npmjs.com/package/diff)。这个库功能十分强大，不仅能够简洁地输出字符串结果，也能够输出规范化的数据结构方便二次开发。这里笔者针对这个库的文档进行文档翻译和简单的讲解，同时也会展示自己的测试demo。
 ## 库简介
 `diff`是一个基于javascript实现的文本内容diff的库。它基于已发表论文中的算法[An O(ND) Difference Algorithm and its Variations" (Myers, 1986).](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.4.6927)
 ## 安装
@@ -19,7 +19,7 @@ const jsDiff = require('diff');
 `added`表示是否是添加内容，`removed`表示是否为删除内容。共有的内容这两个属性都没有，`value`表示内容，`count`表示字符的个数（在某些用法中表示内容的行数）
 可选的配置属性`ignoreCase`: 标记为true时忽略字符的大小写，默认为false，这里给出一个测试例子：  
 ![](https://user-gold-cdn.xitu.io/2020/7/26/17388cdfc9cdd02d?w=1121&h=335&f=png&s=24841)  
-文中例子的线上演示地址[演示地址]()
+文中例子的线上演示地址[演示地址](http://tangshisanbaishou.xyz/diff/index.html)
 
 * `JsDiff.diffWords(oldStr, newStr[, options])` 该方法比较两段文字，比较的维度是单词，忽略空格，返回一个由描述改变对象组成的列表，可选的配置属性`ignoreCase`: 同`diffChars`中一样，这里给出一个使用例子：  
 ![](https://user-gold-cdn.xitu.io/2020/7/26/17388d4274c11e5d?w=1115&h=349&f=png&s=24462)  
@@ -115,9 +115,9 @@ export default class Text extends React.Component {
     }
 }
 ```
-关于使用`diff`库实现类似于`github`的文件diff效果，可以参考笔者的一个仓库,也就是上文中的演示代码，[仓库地址](),具体的实现思路后续会出一篇文详述，稍候。
+关于使用`diff`库实现类似于`github`的文件diff效果，可以参考笔者的一个仓库,也就是上文中的演示代码，[仓库地址](https://github.com/dianluyuanli-wp/jsDiffWeb),具体的实现思路后续会出一篇文详述，稍候。
 
 # 参考资料与相关链接
 [diff库官方文档](https://www.npmjs.com/package/diff)  
-[演示站点]()  
-[演示站点代码仓库]()
+[演示站点](http://tangshisanbaishou.xyz/diff/index.html)  
+[演示站点代码仓库](https://github.com/dianluyuanli-wp/jsDiffWeb)  
