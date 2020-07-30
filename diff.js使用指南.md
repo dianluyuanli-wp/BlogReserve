@@ -1,5 +1,5 @@
 # 前言
-最近在开发过程中遇到了需要diff文件内容或者大json的业务场景，发现了一个比较好用且经典的js库[diff](https://www.npmjs.com/package/diff)。这个库功能十分强大，不仅能够简洁地输出字符串结果，也能够输出规范化的数据结构方便二次开发。这里笔者针对这个库的文档进行文档翻译和简单的讲解，同时也会展示自己的测试demo。
+最近在开发过程中遇到了需要diff文件内容或者大json的业务场景，发现了一个比较好用且经典的js库[diff](https://www.npmjs.com/package/diff)。这个库功能十分强大，不仅能够简洁地输出字符串结果，也能够输出规范化的数据结构方便二次开发。这里笔者针对这个库的文档进行翻译和简单的讲解，同时也会展示自己的测试demo。
 ## 库简介
 `diff`是一个基于javascript实现的文本内容diff的库。它基于已发表论文中的算法[An O(ND) Difference Algorithm and its Variations" (Myers, 1986).](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.4.6927)
 ## 安装
@@ -29,7 +29,7 @@ const jsDiff = require('diff');
 
 * `JsDiff.diffLines(oldStr, newStr[, options])` 比较两段文字，比较的维度是行。可选的配置项：  
 `ignoreWhitespace`：设置为true时，将忽略开头和结尾处的空格，在`diffTrimmedLines`中也有这个配置。  
-`newlineIsToken`: 设置为true时，将换行符看作是分隔符。这样就可以独立于行内容对换行结构进行更改，并将其视为独立的(原文:This allows for changes to the newline structure to occur independently of the line content and to be treated as such, 这一句是机翻的，感觉不大准确)。总得来说，这样使得`diffLines`的输出对人类阅读(相较于其他对计算机比较有好的输出)来说更为友好，更叫方便于比较差异。返回一个由描述改变的对象组成的列表。（这里返回的obj列表中，`count`表示这段内容的行数，下面的方法类似），接下来展示一个例子：  
+`newlineIsToken`: 设置为true时，将换行符看作是分隔符。这样就可以独立于行内容对换行结构进行更改，并将其视为独立的(原文:This allows for changes to the newline structure to occur independently of the line content and to be treated as such, 这一句是机翻的，感觉不大准确)。总得来说，这样使得`diffLines`的输出对人类阅读(相较于其他对计算机更为友好的输出方式)更为友好，更加方便于比较差异。返回一个由描述改变的对象组成的列表。（这里返回的obj列表中，`count`表示这段内容的行数，下面的方法类似），接下来展示一个例子：  
 ![](https://user-gold-cdn.xitu.io/2020/7/26/1738900b7af058c6?w=1113&h=416&f=png&s=26994)  
 
 * `sDiff.diffTrimmedLines(oldStr, newStr[, options])` 比较两段文字，比较的维度是行，忽略开头和结尾处的空格，返回一个由描述改变的对象组成的列表。实例截图：  
@@ -64,9 +64,9 @@ const jsDiff = require('diff');
 与之对应的应用实例如下：  
 ![](https://user-gold-cdn.xitu.io/2020/7/27/1738e0a82154e1d3?w=1058&h=455&f=png&s=31154)  
 
-* `JsDiff.applyPatch(source, patch[, options])` 使用一个统一的diff补丁。该方法会返回一个应用了补丁的新版本字符串。这里的补丁（patch）可能是字符串形式的diff或者`parsePatch`和`structuredPatch`方法返回的输出。客源的配置项有如下：  
-    * `fuzzFactor`: 拒绝应用补丁之前允许比较内容的行数。默认是0  
-    * `compareLine(lineNumber, line, operation, patchContent)` 用来比较给定的行内容在应用补丁时是否应该被认定为相等。默认是使用杨哥相等来比较的，但是这容易与fuzzier比较相冲突。当哼内容应该被拒绝时返回false。
+* `JsDiff.applyPatch(source, patch[, options])` 使用一个统一的diff补丁。该方法会返回一个应用了补丁的新版本字符串。这里的补丁（patch）可能是字符串形式的diff或者`parsePatch`和`structuredPatch`方法返回的输出。可选的配置项有如下：  
+    * `fuzzFactor`: 拒绝应用补丁之前允许比较的内容的行数。默认是0  
+    * `compareLine(lineNumber, line, operation, patchContent)` 用来比较给定的行内容在应用补丁时是否应该被认定为相等。默认是使用严格相等来比较的，但是这容易与fuzzier比较相冲突。当内容应该被拒绝时返回false。
 
 * `JsDiff.applyPatches(patch, options)` 应用一个或者多个补丁。这个方法将会迭代补丁的内容并且将其应用在回调中传入的内容上。每个补丁被使用的整体工作流程是：  
     * `options.loadFile(index, callback)` 调用者应该加载文件的内容并且将其传递给回调（`callback(err, data)`）。传入一个`err`将会中断未来补丁的执行
