@@ -145,13 +145,13 @@ export default class ContentDiff extends React.Component {
         //  展示的类型
         showType: SHOW_TYPE.UNIFIED
     }
-
+    //  转换展示模式
     handleShowTypeChange = (e) => {
         this.setState({
             showType: e.target.value
         })
     }
-
+    //  判断状态
     get isSplit() {
         return this.state.showType === SHOW_TYPE.SPLITED;
     }
@@ -161,21 +161,39 @@ export default class ContentDiff extends React.Component {
         //  省略重复内容
     }
 
+    //  给行号补足位数
+    getLineNum = (number) => {
+        return ('     ' + number).slice(-5);
+    }
+
+    //  获取split下的内容node
+    getPaddingContent = (item) => {
+        return <div className={cx(s.splitCon)}>{item}</div>
+    }
+
     paintCode = (item, isHead = true) => {
         const { type, content: { head, tail, hidden }, leftPos, rightPos} = item;
+        //  是否是公共部分
         const isNormal = type === ' ';
+        //  根据类型选择合适的class
         const cls = cx(s.normal, type === '+' ? s.add : '', type === '-' ? s.removed : '');
+        //  占位空格
         const space = "     ";
+        //  渲染头部或者尾部内容
         return (isHead ? head : tail).map((sitem, sindex) => {
             let posMark = '';
             if (isNormal) {
+                //  计算行号的偏移值
                 const shift = isHead ? 0: (head.length + hidden.length);
+                //  左右两侧的行数不一定一样
                 posMark = (space + (leftPos + shift + sindex)).slice(-5)
                     + (space + (rightPos + shift + sindex)).slice(-5);
             } else {
+                //  增减部分的行号计算
                 posMark = type === '-' ? this.getLineNum(leftPos + sindex) + space
                     : space + this.getLineNum(rightPos + sindex);
             }
+            //  依次渲染行号，+ -号和代码内容
             return <div key={(isHead ? 'h-' : 't-') + sindex} className={cls}>
                 <pre className={cx(s.pre, s.line)}>{posMark}</pre>
                 <div className={s.outerPre}><div className={s.splitCon}><div className={s.spanWidth}>{' ' + type + ' '}</div>{this.getPaddingContent(sitem, true)}</div></div>
@@ -184,9 +202,11 @@ export default class ContentDiff extends React.Component {
     }
 
     getUnifiedRenderContent = () => {
+        //  根据lineGroup的内容依次渲染代码块
         return this.state.lineGroup.map((item, index) => {
             const { type, content: { hidden }} = item;
             const isNormal = type === ' ';
+            //  依次渲染head,hidden,tail三部分内容
             return <div key={index}>
                 {this.paintCode(item)}
                 {hidden.length && isNormal && this.getHiddenBtn(hidden, index) || null}
@@ -213,6 +233,155 @@ export default class ContentDiff extends React.Component {
                 </Content>
             </React.Fragment>
         )
+    }
+}
+```
+以上的部分将`lineGroup`中的每个对象的`content`依次根据head,hidden,tail三部分来渲染，行数根据先前计算的`lStartNum`和`rStartNum`来进行展示。  
+## 分栏模式下的内容展示
+接下来是分栏的实现：  
+```js
+export default class ContentDiff extends React.Component {
+
+    //  获取split下的页码node
+    getLNPadding = (origin) => {
+        const item = ('     ' + origin).slice(-5);
+        return <div className={cx(s.splitLN)}>{item}</div>
+    }
+
+    //  差异部分的代码渲染
+    getCombinePart = (leftPart = {}, rightPart = {}) => {
+        const { type: lType, content: lContent, leftPos: lLeftPos, rightPos: lRightPos } = leftPart;
+        const { type: rType, content: rContent, leftPos: rLeftPos, rightPos: rRightPos } = rightPart;
+        //  分别获取左右两侧对应的内容和class
+        const lArr = lContent?.head || [];
+        const rArr = rContent?.head || [];
+        const lClass = lType === '+' ? s.add : s.removed;
+        const rClass = rType === '+' ? s.add : s.removed;
+        return <React.Fragment>
+                <div className={cx(s.iBlock, s.lBorder)}>{lArr.map((item, index) => {
+                    //  渲染左半边内容，也就是删除的部分（如果有的话）
+                    //  两个div分别输出行数和内容
+                    return <div className={cx(s.prBlock, lClass)} key={index}>
+                        {this.getLNPadding(lLeftPos + index)}
+                        {this.getPaddingContent('-  ' + item)}
+                    </div>
+                })}</div>
+                <div className={cx(s.iBlock, lArr.length ? '' : s.rBorder)}>{rArr.map((item, index) => {
+                    //  渲染右半边内容，也就是新增的部分（如果有的话）
+                    return <div className={cx(s.prBlock, rClass)} key={index}>
+                        {this.getLNPadding(rRightPos + index)}
+                        {this.getPaddingContent('+  ' + item)}
+                    </div>
+                })}</div>
+            </React.Fragment>
+    }
+
+    //  无变化部分的代码渲染
+    getSplitCode = (targetBlock, isHead = true) => {
+        const { type, content: { head, hidden, tail }, leftPos, rightPos} = targetBlock;
+        return (isHead ? head : tail).map((item, index) => {
+            const shift = isHead ? 0: (head.length + hidden.length);
+            //  左右两边除了样式，基本没有差异
+            return <div key={(isHead ? 'h-' : 't-') + index}>
+                <div className={cx(s.iBlock, s.lBorder)}>{this.getLNPadding(leftPos + shift + index)}{this.getPaddingContent('    ' + item)}</div>
+                <div className={s.iBlock}>{this.getLNPadding(rightPos + shift +index)}{this.getPaddingContent('    ' + item)}</div>
+            </div>
+        })
+    }
+
+    //  渲染分栏的代码
+    getSplitContent = () => {
+        const length = this.state.lineGroup.length;
+        const contentList = [];
+        for (let i = 0; i < length; i++) {
+            const targetBlock = this.state.lineGroup[i];
+            const { type, content: { hidden } } = targetBlock;
+            //  渲染相同的部分
+            if (type === ' ') {
+                contentList.push(<div key={i}>
+                    {this.getSplitCode(targetBlock)}
+                    {hidden.length && this.getHiddenBtn(hidden, i) || null}
+                    {this.getSplitCode(targetBlock, false)}
+                </div>)
+            } else if (type === '-') {
+                //  渲染移除的部分
+                const nextTarget = this.state.lineGroup[i + 1] || { content: {}};
+                const nextIsPlus = nextTarget.type === '+';
+                contentList.push(<div key={i}>
+                    {this.getCombinePart(targetBlock, nextIsPlus ? nextTarget : {})}
+                </div>)
+                nextIsPlus ? i = i + 1 : void 0;
+            } else if (type === '+') {
+                //  渲染新增的部分
+                contentList.push(<div key={i}>
+                    {this.getCombinePart({}, targetBlock)}
+                </div>)
+            }
+        }
+        return <div>
+            {contentList}
+        </div>
+    }
+
+    //  省略重复代码
+}
+```
+这里的展示方式和`unified`模式下略有不同。公共部分和差一部分要使用不同的渲染函数，相同的部分代码要对齐，差异的部分左右两侧需要等高。
+## 展开摁钮的实现
+接下来我们实现点击展开的功能：
+```js
+export default class ContentDiff extends React.Component {
+    //  省略重复的内容
+
+    //  根据三种点击的状态，更新head,tail和hidden的内容
+    openBlock = (type, index) => {
+        const copyOfLG = this.state.lineGroup.slice();
+        const targetGroup = copyOfLG[index];
+        const { head, tail, hidden } = targetGroup.content;
+        if (type === 'head') {
+            //  如果是点击向上的箭头，对head和hidden部分的内容进行更新
+            targetGroup.content.head = head.concat(hidden.slice(0, BLOCK_LENGTH));
+            targetGroup.content.hidden = hidden.slice(BLOCK_LENGTH);
+        } else if (type === 'tail') {
+            //  如果是点击向下的箭头，对tail和hidden的部分进行更新
+            const hLenght = hidden.length;
+            targetGroup.content.tail = hidden.slice(hLenght - BLOCK_LENGTH).concat(tail);
+            targetGroup.content.hidden = hidden.slice(0, hLenght - BLOCK_LENGTH);
+        } else {
+            //  如果是双向箭头，展开所有的内容到head
+            targetGroup.content.head = head.concat(hidden);
+            targetGroup.content.hidden = [];
+        }
+        copyOfLG[index] = targetGroup;
+        this.setState({
+            lineGroup: copyOfLG
+        });
+    }
+
+    //  渲染隐藏的部分
+    getHiddenBtn = (hidden, index) => {
+        //  如果隐藏的内容过少，则显示双向箭头
+        const isSingle = hidden.length < BLOCK_LENGTH * 2;
+        return <div key='collapse' className={s.cutWrapper}>
+            <div className={cx(s.colLeft, this.isSplit ? s.splitWidth : '')}>
+                {isSingle ? <div className={s.arrow} onClick={this.openBlock.bind(this, 'all', index)}>
+                    {/* 双相箭头 */}
+                    <svg className={s.octicon} viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fillRule="evenodd" d="M8.177.677l2.896 2.896a.25.25 0 01-.177.427H8.75v1.25a.75.75 0 01-1.5 0V4H5.104a.25.25 0 01-.177-.427L7.823.677a.25.25 0 01.354 0zM7.25 10.75a.75.75 0 011.5 0V12h2.146a.25.25 0 01.177.427l-2.896 2.896a.25.25 0 01-.354 0l-2.896-2.896A.25.25 0 015.104 12H7.25v-1.25zm-5-2a.75.75 0 000-1.5h-.5a.75.75 0 000 1.5h.5zM6 8a.75.75 0 01-.75.75h-.5a.75.75 0 010-1.5h.5A.75.75 0 016 8zm2.25.75a.75.75 0 000-1.5h-.5a.75.75 0 000 1.5h.5zM12 8a.75.75 0 01-.75.75h-.5a.75.75 0 010-1.5h.5A.75.75 0 0112 8zm2.25.75a.75.75 0 000-1.5h-.5a.75.75 0 000 1.5h.5z"></path></svg>
+                </div>
+                    : <React.Fragment>
+                        {/* 向上的箭头 */}
+                        <div className={s.arrow} onClick={this.openBlock.bind(this, 'head', index)}>
+                            <svg className={s.octicon} viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fillRule="evenodd" d="M8.177 14.323l2.896-2.896a.25.25 0 00-.177-.427H8.75V7.764a.75.75 0 10-1.5 0V11H5.104a.25.25 0 00-.177.427l2.896 2.896a.25.25 0 00.354 0zM2.25 5a.75.75 0 000-1.5h-.5a.75.75 0 000 1.5h.5zM6 4.25a.75.75 0 01-.75.75h-.5a.75.75 0 010-1.5h.5a.75.75 0 01.75.75zM8.25 5a.75.75 0 000-1.5h-.5a.75.75 0 000 1.5h.5zM12 4.25a.75.75 0 01-.75.75h-.5a.75.75 0 010-1.5h.5a.75.75 0 01.75.75zm2.25.75a.75.75 0 000-1.5h-.5a.75.75 0 000 1.5h.5z"></path></svg>
+                        </div>
+                        {/* 向下的箭头 */}
+                        <div className={s.arrow} onClick={this.openBlock.bind(this, 'tail', index)}>
+                            <svg className={s.octicon} viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fillRule="evenodd" d="M7.823 1.677L4.927 4.573A.25.25 0 005.104 5H7.25v3.236a.75.75 0 101.5 0V5h2.146a.25.25 0 00.177-.427L8.177 1.677a.25.25 0 00-.354 0zM13.75 11a.75.75 0 000 1.5h.5a.75.75 0 000-1.5h-.5zm-3.75.75a.75.75 0 01.75-.75h.5a.75.75 0 010 1.5h-.5a.75.75 0 01-.75-.75zM7.75 11a.75.75 0 000 1.5h.5a.75.75 0 000-1.5h-.5zM4 11.75a.75.75 0 01.75-.75h.5a.75.75 0 010 1.5h-.5a.75.75 0 01-.75-.75zM1.75 11a.75.75 0 000 1.5h.5a.75.75 0 000-1.5h-.5z"></path></svg>
+                        </div>
+                    </React.Fragment>
+                }
+            </div>
+            <div className={cx(s.collRight, this.isSplit ? s.collRightSplit : '')}><div className={cx(s.colRContent, isSingle ? '' : s.cRHeight)}>{`当前隐藏内容:${hidden.length}行`}</div></div>
+        </div>
     }
 }
 ```
