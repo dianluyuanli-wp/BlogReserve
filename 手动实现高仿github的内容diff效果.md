@@ -326,7 +326,7 @@ export default class ContentDiff extends React.Component {
     //  省略重复代码
 }
 ```
-这里的展示方式和`unified`模式下略有不同。公共部分和差一部分要使用不同的渲染函数，相同的部分代码要对齐，差异的部分左右两侧需要等高。
+这里的展示方式和`unified`模式下略有不同。公共部分和差异部分要使用不同的渲染函数，相同的部分代码要对齐，差异的部分左右两侧需要等高。
 ## 展开摁钮的实现
 接下来我们实现点击展开的功能：
 ```js
@@ -365,7 +365,7 @@ export default class ContentDiff extends React.Component {
         return <div key='collapse' className={s.cutWrapper}>
             <div className={cx(s.colLeft, this.isSplit ? s.splitWidth : '')}>
                 {isSingle ? <div className={s.arrow} onClick={this.openBlock.bind(this, 'all', index)}>
-                    {/* 双相箭头 */}
+                    {/* 双向箭头 */}
                     <svg className={s.octicon} viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fillRule="evenodd" d="M8.177.677l2.896 2.896a.25.25 0 01-.177.427H8.75v1.25a.75.75 0 01-1.5 0V4H5.104a.25.25 0 01-.177-.427L7.823.677a.25.25 0 01.354 0zM7.25 10.75a.75.75 0 011.5 0V12h2.146a.25.25 0 01.177.427l-2.896 2.896a.25.25 0 01-.354 0l-2.896-2.896A.25.25 0 015.104 12H7.25v-1.25zm-5-2a.75.75 0 000-1.5h-.5a.75.75 0 000 1.5h.5zM6 8a.75.75 0 01-.75.75h-.5a.75.75 0 010-1.5h.5A.75.75 0 016 8zm2.25.75a.75.75 0 000-1.5h-.5a.75.75 0 000 1.5h.5zM12 8a.75.75 0 01-.75.75h-.5a.75.75 0 010-1.5h.5A.75.75 0 0112 8zm2.25.75a.75.75 0 000-1.5h-.5a.75.75 0 000 1.5h.5z"></path></svg>
                 </div>
                     : <React.Fragment>
