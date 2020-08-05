@@ -6,7 +6,7 @@
 [代码演示站点](http://tangshisanbaishou.xyz/diff/index.html)  
 # 如何实现
 ## 核心原理
-最核心的文本diff算法，由`diff`库替我们实现，这里我们使用的是`diffLines`方法(关于diff库的使用，笔者有一篇[博文]()有详细介绍)。通过该库输出的数据结构，对其进行二次开发，以便类似gitHub的文件diff效果。
+最核心的文本diff算法，由`diff`库替我们实现，这里我们使用的是`diffLines`方法(关于diff库的使用，笔者有一篇博文[diff使用指南]()有详细介绍)。通过该库输出的数据结构，对其进行二次开发，以便实现类似gitHub的文件diff效果。
 ## 获取输入
 这里我们的比较内容都是以字符串的形式进行输入。至于如何将文件转化成字符串，在浏览器端可以使用`Upload`进行文件上传，然后在获得的文件句柄上调用`text`方法，即可获得文件对应的字符串，类似这样：
 ```js
@@ -39,6 +39,7 @@ class Test extends React.Fragment {
 * count: 表示该代码块的行数
 * added: 如果该代码块为新增内容，其值为true
 * removed： 如果该代码块表示移除的内容，其值为true  
+
 到这里我们的实现思路已经大致成型：根据数组内容渲染代码块，以`\n`为分隔符，划分代码行，`added`部分标绿，`removed`部分标红，其余部分正常显示即可，至于具体的代码行数，可以根据`count`进行计算。
 ## 代码实现
 ### 原始数据处理
@@ -134,7 +135,7 @@ export default class ContentDiff extends React.Component {
     }
 }
 ```
-通过上述代码完成对原始数据的处理，将表示内容的数组中的对象划分为三种：`added`,`removed`和公共代码三种，并将内容分成head，hidden和tail三部分（主要是为了公共代码部分隐藏冗余的代码），然后计算代码块在对比显示时的初始行数行数,分栏(splited)和整合(unified)模式下都可使用。  
+通过上述代码完成对原始数据的处理，将表示内容的数组中的对象划分为三种：`added`,`removed`和公共代码，并将内容分成head，hidden和tail三部分（主要是为了公共代码部分隐藏冗余的代码），然后计算代码块在对比显示时的初始行数行数,分栏(splited)和整合(unified)模式下都可使用。  
 ## 整合模式下的内容展示
 接下来是整合模式的展示代码：
 ```js
@@ -385,6 +386,17 @@ export default class ContentDiff extends React.Component {
     }
 }
 ```
+这里直接搬运了git官网的svg箭头图片，查看更多的交互一共有三种，折叠内容多于10行的，分别显示上下箭头，每点击一次多展示5行内容，一旦隐藏内容少于10行，显示双向箭头，此时点击将展示所有的折叠内容。这一部分的核心逻辑是可复用的，splited和unified内容皆可以使用，只是在UI的处理上需要有一定的差别。
+## UI细节
+在编码过程中遇到一个问题，`diff`库处理之后的value是包含空格的，类似于这样`     const isSingle = true;`但是在展示时div标签默认是会合并（trim）掉开头的空格的，这里有两种方法：  
+* 使用`<pre>`标签包裹内容：使用这个标签包裹的内容将会展示其内部的真实内容，不会有其他逻辑，不过这个标签同于div，在字体样式等方面会有微小的差异（chrome下如此，其他浏览器未确认）  
 
+* 在div样式添加`white-space: pre-wrap;`这样也可以避免内部内容部分的空格被合并成一个。  
+
+# 相关资料
+[diff库官方文档](https://www.npmjs.com/package/diff)  
+[diff使用指南]()  
+[演示站点](http://tangshisanbaishou.xyz/diff/index.html)  
+[演示站点代码仓库](https://github.com/dianluyuanli-wp/jsDiffWeb)  
 
 
