@@ -489,4 +489,4 @@ function createContext(defaultValue, calculateChangedBits) {
 上一篇：  
 [洞悉细节！react 16.8.6源码分析-3 元素创建]()  
 下一篇：  
-[施工中]()  
+[洞悉细节！react 16.8.6源码分析-5 hooks API]()  
