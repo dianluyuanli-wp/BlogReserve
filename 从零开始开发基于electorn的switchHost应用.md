@@ -5,7 +5,8 @@
 实现一个简单的桌面端switch host应用，windows中有一个文件`hosts`(路径通常是`C:\Windows\System32\drivers\etc\hosts`),该文件维护了一个域名和ip地址的映射。一般长这样：  
 ![](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/f55963c594974d4eb649d40fb7a813d3~tplv-k3u1fbpfcp-zoom-1.image)  
 向文件中的域名发出请求时，将会直接向对应的ip地址发送请求体，通常用来实现本地代理，搞前端开发的应该经常会这样操作。使用`#`作为注释标记。在开发过程中，需要经常切换本地和线上真实环境，频繁改动这个文件比较繁琐，这里开发桌面应用来简化这个过程，提高效率。最后的成品长这样:
-![](https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/11fa408b96cc4f42b00d4befe414672e~tplv-k3u1fbpfcp-zoom-1.image)  
+![](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/f7e86adc660b480788f24eed8ada658b~tplv-k3u1fbpfcp-zoom-1.image)  
+
 项目地址放在文末
 
 # 实现
@@ -85,7 +86,9 @@ app.on('activate', () => {
 ```
 之后就可以开启你自己的应用了`npm run start`,正常的话，应该会在桌面弹出一个浏览器窗口，里面绘制的就是你`index.html`中的内容，这个html里面要实现什么逻辑就是你说了算。
 ## 业务逻辑
-electron壳子的相关逻辑到这里就结束了，接下来我们转入业务逻辑的部分。这里笔者的工具链是ts+react(函数式组件hooks)+antd,通过node中的`fs`和`path`来读取文件，通过webpack将所有逻辑打包成js和css文件，将其内联到我们的`index.html`里面。接下来是业务逻辑，这里首先要做的就是从系统中读取`hosts`文件的内容，然后将其中的域名-ip映射一一提取出来，并抽象成一定的数据结构，方便后续处理，代码如下：  
+electron壳子的相关逻辑到这里就结束了，接下来我们转入业务逻辑的部分。这里笔者的工具链是ts+react(函数式组件hooks)+antd,通过node中的`fs`和`path`来读取文件，通过webpack将所有逻辑打包成js和css文件，将其内联到我们的`index.html`里面。
+### 数据初始化
+接下来是业务逻辑，这里首先要做的就是从系统中读取`hosts`文件的内容，然后将其中的域名-ip映射一一提取出来，并抽象成一定的数据结构，方便后续处理，代码如下：  
 ```js
 import React, { useState, useEffect, useReducer } from 'react';
 import * as s from './index.css';
@@ -110,27 +113,21 @@ const singleReg = /^((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})(\.((2(5[0-5]|[0-4]\d))|[
 function Panel() {
     //  读取配置文件路径
     const configPath = 'C:\\Windows\\System32\\drivers\\etc\\hosts';
-
+    //  hooks，记录原始文件内容和抽象过后的数据对象
     function objReducer(state: T_infoObj, action: T_infoObj) {
         //  以前没有空对象，react还是以为是原始对象，会不触发更新
         return Object.assign({}, state, action);
     }
     const [infoObj, setInfo] = useReducer(objReducer, {
+        //  记录每一行的文本
         textLines: [],
+        //  由每一行内容抽象出来的对象组成数组
         detailObjArr: [] as Array<detailObj>,
     } as T_infoObj);
 
-    function setMSReducer(state: modalStatus, action: modalStatus) {
-        return Object.assign({}, state, action);
-    }
-    const [modStatus, setMS] = useReducer(setMSReducer, {
-        showModal: false,
-        modalType: EDIT_CONFIG,
-        curIndex: 0,
-    } as modalStatus);
-    //  path.resolve('D:\\self\\eletron\\testApp', "content.txt");
     useEffect(() => {
         const TEXT_PATH = configPath; // 大文件存储目录
+        //  读取文件内容
         const oldContent = fs.readFileSync(TEXT_PATH, 'utf-8');
         //  提取所有行
         const xxx = oldContent.split(SPLIT_CHAR);
@@ -174,4 +171,198 @@ function Panel() {
     return ();
 }
 ```
-这里的处理思路是根据`hotsts`文件中的行尾换行符`\r\n`，将文件切为单行内容分别分析。通过正则表达式，提取出每行中可能存在的ip地址。通过匹配到的ip地址将行内容split,split的结果来判断该行是否是符合语法的域名-ip映射。这一系列操作完成后，获得两个变量供后续操作：`textLines`是一个数组，其内部保存`hotst`文件中每一行的内容，`detailObjArr`也是一个数组，内容是所有符合hosts文件配置语法的域名-ip映射抽象出的对象。具体定义详见源码
+这里的处理思路是根据`hotsts`文件中的行尾换行符`\r\n`，将文件切为单行内容分别分析。通过正则表达式，提取出每行中可能存在的ip地址。通过匹配到的ip地址将行内容split,split的结果来判断该行是否是符合语法的域名-ip映射。这一系列操作完成后，获得两个变量供后续操作：`textLines`是一个数组，其内部保存`hotst`文件中每一行的内容，`detailObjArr`也是一个数组，内容是所有符合hosts文件配置语法的域名-ip映射抽象出的对象。具体定义详见源码。
+### UI绘制与交互逻辑
+```js
+//  省略重复代码
+function Panel() {
+    function setMSReducer(state: modalStatus, action: modalStatus) {
+        return Object.assign({}, state, action);
+    }
+    //  用来控制modal显示的reducer
+    const [modStatus, setMS] = useReducer(setMSReducer, {
+        //  是否展示对话框
+        showModal: false,
+        //  对话框的类型：编辑或者新增
+        modalType: EDIT_CONFIG,
+        //  当前修改的是第几个抽象obj，方便修改
+        curIndex: 0,
+    } as modalStatus);
+
+    //  切换switch,打开或者关闭某个配置，具体就是对没有一行删除行首的#或者添加#
+    //  同时同步info.detailObjArr的内容，更新UI
+    function changeSwitch(item: detailObj, value) {
+        const { index, objIndex } = item;
+        let finalStr = '';
+        //  获得原始内容的副本
+        let cpyLines = infoObj.textLines.slice(0);
+        const allLength = infoObj.textLines.length;
+        //  更新原始string，使用reduce,拼接成新的文本内容
+        finalStr = infoObj.textLines.reduce((old, newItem, sindex) => {
+            let newLine = newItem;
+            //  到了修改的那一行
+            if (sindex === index) {
+                //  确定是添加还是去除注释，修改代码行
+                const originContent = value ? newItem.slice(1) : ('#' + newItem);
+                newLine = originContent + SPLIT_CHAR;
+                cpyLines[index] = originContent;
+            } else if (sindex !== (allLength - 1)) {
+                newLine = newLine + SPLIT_CHAR;
+            }
+            return old + newLine;
+        }, '');
+        //  更新objArr
+        const cpObjArr = infoObj.detailObjArr.slice();
+        cpObjArr[objIndex].able = value;
+        //  更新UI
+        setInfo({
+            textLines: cpyLines,
+            detailObjArr: cpObjArr,
+        })
+        //  更新文件内容
+        writeFile(finalStr);
+    };
+    //  写文件操作，覆盖原始文件内容
+    function writeFile(content) {
+        fs.writeFileSync(configPath, content);
+    }
+    //  校验修改后的内容是否符合语法
+    function validateNewObj(obj) {
+        const { ip, domain } = obj;
+        return domain && ip.match(singleReg);
+    }
+    //  一个modal,删除某一项配置
+    function deleteConfig(index) {
+        Modal.confirm({
+            title: '删除配置',
+            content: (
+              <div>确认删除本条配置?</div>
+            ),
+            onCancel() {},
+            onOk() {
+                //  获得副本
+                const copyLines = infoObj.textLines.slice();
+                const copyObjArray = infoObj.detailObjArr.slice();
+                //  删除对应的内容
+                copyLines.splice(infoObj.detailObjArr[index].index, 1);
+                copyObjArray.splice(index, 1);
+                //  写原始文件
+                writeFile(copyLines.join(SPLIT_CHAR));
+                //  更新数据与UI
+                setInfo({
+                    textLines: copyLines,
+                    detailObjArr: copyObjArray,
+                })
+            }
+        })
+    }
+    let newObj = {
+        ip: '',
+        domain: ''
+    };
+    //  改变输入框中的ip或者domain
+    function changInfo(key, e) {
+        newObj[key] = e.target.value;
+    }
+    //  点击确认时的回调
+    function handleOk() {
+        if (!validateNewObj(newObj)) {
+            message.error('输入有误，请检查');
+            return;
+        }
+        //  获得新字符串，本质是拷贝一个副本
+        const newLines = infoObj.textLines.slice();
+        //  获得新对象，拷贝一个副本
+        const newObjArray= infoObj.detailObjArr.slice();
+        //  判断功能，添加配置和修改配置走不同的分支
+        if (modStatus.modalType === ADD_CONFIG) {
+            //  代码行增加新内容
+            newLines.push(`${newObj.ip}    ${newObj.domain}`);
+            //  抽象数据添加新对象
+            newObjArray.push({
+                isValid: true,
+                index: newLines.length - 1,
+                able: true,
+                ip: newObj.ip,
+                objIndex: newObjArray.length,
+                domain: newObj.domain,
+            })
+
+        } else {
+            //  修改配置
+            const { index, domain, ip } = infoObj.detailObjArr[modStatus.curIndex];
+            //  替换文本行中的domain和ip
+            const newContent = newLines[index].replace(domain, newObj.domain).replace(ip, newObj.ip);
+            /// 更新文件内容
+            newLines[index] = newContent;
+            const targetObj = newObjArray[index];
+            Object.assign(targetObj, newObj);
+        }
+        writeFile(newLines.join(SPLIT_CHAR));
+        setInfo({
+            textLines: newLines,
+            detailObjArr: newObjArray,
+        })
+        //  关闭modal
+        setMS({
+            showModal: false
+        })
+    }
+    function handleCancel() {
+        setMS({
+            showModal: false
+        })
+    }
+    function showModalFuc(type, index = -1) {
+        setMS({
+            showModal: true,
+            modalType: type,
+            curIndex: index,
+        })
+    }
+    //  弹出的对话框，新增和修改用的是同一个组件
+    function getModal() {
+        const { modalType, curIndex } = modStatus;
+        newObj = { domain: infoObj.detailObjArr[curIndex]?.domain || '', ip: infoObj.detailObjArr[curIndex]?.ip || ''};
+        return <Modal
+            title={ modalType === EDIT_CONFIG ? '修改配置' : '新增配置'}
+            visible={modStatus.showModal}
+            onOk={handleOk}
+            onCancel={handleCancel}
+        >
+            <Form {...layout} initialValues={{ domain: newObj.domain, ip: newObj.ip }}>
+                <FormItem label='域名' name='domain' rules={[{ required: true }]}>
+                    <Input onChange={changInfo.bind(null, 'domain')}/>
+                </FormItem>
+                <FormItem label='ip' name='ip' rules={[{ pattern: singleReg, message: '请输入正确的ip'}]}>
+                    <Input onChange={changInfo.bind(null, 'ip')}/>
+                </FormItem>
+            </Form>
+        </Modal>;
+    }
+    //  渲染主面板
+    return <div className={s.name}>
+        <div className={s.addWrapper}>
+            <div className={s.aWord}>新增配置</div><FileAddOutlined onClick={showModalFuc.bind(null, ADD_CONFIG)}/>
+        </div>
+        {infoObj.detailObjArr.map((item, index) => {
+            const { ip, domain, index: lineNum, able } = item;
+            return (
+                <div key={index} className={s.formWrapper}>
+                    <FormItem label={`${able ? '关闭' : '开启'}映射`} >
+                            <Switch onChange={changeSwitch.bind(null, item)} defaultChecked={able}/>
+                            <span className={s.domainAndIp}>{domain}: {ip}</span>
+                    </FormItem>
+                    <div className={s.iconGroup}>
+                        <EditOutlined onClick={showModalFuc.bind(null, EDIT_CONFIG, index)}/>
+                        <div className={s.iSpan}/>
+                        <DeleteOutlined onClick={deleteConfig.bind(null, index)}/>
+                    </div>
+                </div>
+            );
+        })}
+        {getModal()}
+    </div>
+}
+```
+
