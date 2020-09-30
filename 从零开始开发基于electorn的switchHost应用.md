@@ -1,17 +1,16 @@
 # 前言
-市面上应该有不少切换window下域名映射的应用了，个人感觉这个功能实现起来应该不是很复杂，正好作为自己切入electron学习的机会。electron作为js生态在桌面应用的重磅应用，极大地拓展了js的边界(vsCode就是用electron开发的)。最为一个前端开发，补齐桌面端的开发短板也是很有意义的一件事。
+市面上应该有不少切换window下域名映射的应用了，个人感觉这个功能实现起来应该不是很复杂，正好是自己切入electron学习的好机会。electron作为js生态在桌面应用的重磅应用，极大地拓展了js的边界(vsCode就是用electron开发的)。最为一个前端开发，补齐桌面端的开发短板也是很有意义的一件事。
 
 # 开发目标
 实现一个简单的桌面端switch host应用，windows中有一个文件`hosts`(路径通常是`C:\Windows\System32\drivers\etc\hosts`),该文件维护了一个域名和ip地址的映射。一般长这样：  
 ![](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/f55963c594974d4eb649d40fb7a813d3~tplv-k3u1fbpfcp-zoom-1.image)  
 向文件中的域名发出请求时，将会直接向对应的ip地址发送请求体，通常用来实现本地代理，搞前端开发的应该经常会这样操作。使用`#`作为注释标记。在开发过程中，需要经常切换本地和线上真实环境，频繁改动这个文件比较繁琐，这里开发桌面应用来简化这个过程，提高效率。最后的成品长这样:
 ![](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/f7e86adc660b480788f24eed8ada658b~tplv-k3u1fbpfcp-zoom-1.image)  
-
-项目地址放在文末
+操作过后，配置文件中的内容也会更新,项目地址放在文末
 
 # 实现
 ## 什么是electron
-electron是一套基于js的桌面应用开发套件，使用它可以帮助js开发者方便地开发桌面应用，使用js开发者熟悉的html,css,js文件来绘制页面，实现交互。在使用原生能力上，electron可以开放node的能力给开发者使用，从而获得系统级别的能力，electron也封装了一系列原生的api，方便开发者调用，从而跟操作系统和桌面UI等进行交互。简单来说，可以使用前端开发者熟悉的工具链，直接实现你想要的功能，electron帮你完成了后续的封装，生成可执行文件等工作。electron的原理并不复杂，chrome的v8引擎的强劲性能给了很多开发者无限的想象力，electron也受益于chrome,它相当于把你写的js应用放到一个浏览器里面执行，从而实现开发语言和UI实现上跟前端开发的无缝对接。
+electron是一套基于js的桌面应用开发套件，使用它可以帮助js开发者方便地开发桌面应用，使用js开发者熟悉的html,css,js文件来绘制页面，实现交互。在使用原生能力上，electron可以开放node的能力给开发者使用，从而获得系统级别的能力，electron也封装了一系列原生的api，方便开发者调用，从而跟操作系统和桌面UI等进行交互。简单来说，可以使用前端开发者熟悉的工具链，直接实现你想要的功能，electron帮你完成了后续的封装，生成可执行文件等工作。electron的原理并不复杂，chrome的v8引擎的强劲性能给了很多开发者无限的想象力，electron也受益于chrome,它相当于把你写的js应用放到一个浏览器里面执行，从而实现开发语言和UI实现上跟前端开发工具链的无缝对接。
 ## electron光速入门
 首先编写你自己的js应用，将其整合成一个html文件，类似这样(这里是index.html)：  
 ```html
@@ -33,7 +32,7 @@ electron是一套基于js的桌面应用开发套件，使用它可以帮助js�
   <script src="common.bundle.js" type="text/javascript"></script>
 </html>
 ```
-这可以看到，这里我把打包完成之后的文件和样式都通过内联的方式写在html文件里，我们app开发完之后的成品就长这样，然后安装`electron`(这里可能需要梯子，或者使用国内镜像源),接下来写一个electron启动文件`index.js`文件：  
+这可以看到，这里我把打包完成之后的文件和样式都通过内联的方式写在html文件里，打包完成之后的css和js文件跟这个html文件放在同一个目录下。我们app开发完之后的成品就长这样，然后安装`electron`(这里可能需要T子，或者使用国内镜像源),接下来写一个electron启动文件`index.js`文件：  
 ```js
 const { app, BrowserWindow } = require('electron')
 
@@ -92,6 +91,7 @@ electron壳子的相关逻辑到这里就结束了，接下来我们转入业务
 ```js
 import React, { useState, useEffect, useReducer } from 'react';
 import * as s from './index.css';
+//  注意，如果要引用node模块中的方法，需要这么写
 const fs = window.require('fs');
 const path = window.require('path');
 import { Form, Input, Switch, Modal, message, Upload, Button } from 'antd';
@@ -163,6 +163,7 @@ function Panel() {
         })
         setInfo({
             textLines: xxx,
+            //  打上标记，说明是数组里的第几个
             detailObjArr: yyy.filter(item => item.isValid).map((item, index) => Object.assign(item, { objIndex: index })) as Array<detailObj>
         })
     }, []);
@@ -365,4 +366,55 @@ function Panel() {
     </div>
 }
 ```
+这里核心逻辑是渲染配置项并且实现交互过程，所有的修改和新添加配置的modal(对话框)共用同一个，通过传参的不同来决定渲染的具体内容。修改之后，同步更新原始的文件内容和抽象过后的配置数组。这里借用`antd`的能力实现了domain和ip输入的校验。当打开或者关闭开关时，原始文件和抽象配置数组也会有对应的变化，这里不再赘述。
+### 项目打包，生成exe文件
+业务逻辑完成之后，这里我们进入打包的逻辑，这里笔者推荐使用`electron-builder`，这个是业界广泛使用的`electron`打包器，配置很多，功能丰富。这里只跑一下流程，详情请查看文档。首先安装打包器`npm i electron-builder --save-dev`,这个包安装过程中，会继续下载一系列配套工具，这里也需要T子或者用国内的镜像源。然后再`package.json`中添加如下配置：  
+```json
+{
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron index",
+    "build": "webpack --color --config webpack.config.js",
+    //  新增构建指令
+    "pack": "electron-builder",
+  },
+  //    打包配置  
+  "build": {
+      // app_id,随意填写
+		"appId": "xxx.wss.app",
+        //  输出目录位置
+		"directories": {
+			"output": "build"
+		},
+        //  windows系统下的配置
+		"win": {
+            //  生成安装文件
+			"target": [
+				"nsis",
+				"zip"
+			],
+            "icon": "icon.ico"
+		},
+        //  打包内容
+		"files": [
+            //  app内容
+			"app/**/*",
+            //  启动文件
+			"index.js"
+		]
+  },
+}
+```
+注意，为了方便理解才加了注释，json文件里不允许有注释的。这里我们新增打包指令和相应的配置。运行指令`npm run pack`,进入build文件夹，最后的成品大概这样：  
+![](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/b101595248c649b1b967a38cd25d51cd~tplv-k3u1fbpfcp-zoom-1.image)  
+顺利的话点击exe文件安装即可。
+
+# 总结
+`electron`极大地拓展了前端在桌面端开发的空间，现在大厂中的桌面应用需求，很多都是以它为平台进行开发的，传统的桌面端应用开发已经比较少见（指的是简单应用）。以上只是非常基础的一个示例，`electron`自身提供了非常丰富的api,以它为桥梁，我们可以桌面操作系统进行非常丰富的交互，很多的细节都在官方文档中。笔者很早之前就想学习`electron`,不过没有合适的机会，这里借这个机会也上手了桌面端的开发，技术侧的学习就是这样，实操胜过一切。
+
+# 参考链接
+[electron官方文档](http://www.electronjs.org/docs)  
+[electron-builder官方文档](https://www.electron.build/)  
+[文中项目git地址]()
+
 
