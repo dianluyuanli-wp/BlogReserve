@@ -126,23 +126,35 @@ exports.stop = stop;
 exports.setScope = setScope;
 //  设置上下文
 exports.setContext = setContext;
+//  再同步相关
 exports.resync = resync;
 exports._resyncParent = _resyncParent;
 exports._resyncKey = _resyncKey;
 exports._resyncList = _resyncList;
-exports._resyncRemoved = _resyncRemoved;
+exports._resyncRemoved = _resyncRemoved;、
+//  上下文出栈
 exports.popContext = popContext;
+//  上下文入栈
 exports.pushContext = pushContext;
+//  设置
 exports.setup = setup;
 exports.setKey = setKey;
+//  重新入队
 exports.requeue = requeue;
+//  获取队列上下文
 exports._getQueueContexts = _getQueueContexts;
 ```
 ### conversion相关api
+
 ```js
+//  获取节点的key
 exports.toComputedKey = toComputedKey;
+//  讲一个节点变成语句块
 exports.ensureBlock = ensureBlock;
+//  将箭头函数表达式变成普通函数
 exports.arrowFunctionToShadowed = arrowFunctionToShadowed;
+//  去掉函数环境的封装?
 exports.unwrapFunctionEnvironment = unwrapFunctionEnvironment;
+//  类似arrowFunctionToShadowed
 exports.arrowFunctionToExpression = arrowFunctionToExpression;
 ```
