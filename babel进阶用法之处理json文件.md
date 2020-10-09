@@ -71,7 +71,7 @@ module.exports = function (babel) {
 # babel插件常用api
 ## path相关api
 有关`path`相关的源码都在`@babel/traverse`这个目录下。想要查找到符合条件的节点并进行各种各样的操作，都要依赖这部分的api,官方文档基本等于没有，相关api的用法只有自己扒源码，源码中的api功能大致通过名字可以猜出来，大家可以先有个印象，以后有对应的需求再去查找具体用法。
-### ancestry相关api
+### ancestry.js相关api
 这一部分的api主要是查找当前节点的祖先节点和有关判断，具体使用规则只有看源码自行体会。
 ```js
 //  从当前节点上溯，传入回调函数，通过函数来判断返回什么节点，从自己开始
@@ -95,7 +95,7 @@ exports.isDescendant = isDescendant;
 //  上溯，传入一个类型数组，判断所有节点中是否是数组中的类型
 exports.inType = inType;
 ```
-### comments相关api
+### comments.js相关api
 这一部分的api主要是查找跟注释相关的节点
 ```js
 //  和兄弟元素共享注释
@@ -105,7 +105,7 @@ exports.addComment = addComment;
 //  添加多行注释
 exports.addComments = addComments;
 ```
-### context相关api
+### context.js相关api
 主要是跟当前访问上下文相关的api
 ```js
 //  调用一系列函数，返回布尔值
@@ -144,7 +144,7 @@ exports.requeue = requeue;
 //  获取队列上下文
 exports._getQueueContexts = _getQueueContexts;
 ```
-### conversion相关api
+### conversion.js相关api
 
 ```js
 //  获取节点的key
@@ -157,4 +157,76 @@ exports.arrowFunctionToShadowed = arrowFunctionToShadowed;
 exports.unwrapFunctionEnvironment = unwrapFunctionEnvironment;
 //  类似arrowFunctionToShadowed
 exports.arrowFunctionToExpression = arrowFunctionToExpression;
+```
+### evaluation.js相关api
+这里是进入输入节点并且做静态分析，看返回的值是true或者false，如果不能确定，返回undefined
+```js
+//  返回true、false或者undefined
+exports.evaluateTruthy = evaluateTruthy;
+//  返回一个对象，里面有详细信息
+exports.evaluate = evaluate;
+```
+### family.js相关api
+这个文件主要处理子元素和兄弟元素
+```js
+//  获得对位的兄弟元素
+exports.getOpposite = getOpposite;
+//  获得完整路径记录
+exports.getCompletionRecords = getCompletionRecords;
+//  传入key,获得兄弟节点
+exports.getSibling = getSibling;
+//  获得上一个兄弟节点
+exports.getPrevSibling = getPrevSibling;
+//  获得下一个兄弟节点
+exports.getNextSibling = getNextSibling;
+//  获得所有的下方的兄弟节点
+exports.getAllNextSiblings = getAllNextSiblings;
+//  获得所有上方的兄弟节点
+exports.getAllPrevSiblings = getAllPrevSiblings;
+//  根据key和上下文，传入节点
+exports.get = get;
+//  配合get使用
+exports._getKey = _getKey;
+//  配合get使用
+exports._getPattern = _getPattern;
+//  获得绑定的标识符
+exports.getBindingIdentifiers = getBindingIdentifiers;
+//  获得外部绑定的标识符
+exports.getOuterBindingIdentifiers = getOuterBindingIdentifiers;
+//  获得绑定的标识符路径
+exports.getBindingIdentifierPaths = getBindingIdentifierPaths;
+//  获得外部绑定的标识符路径
+exports.getOuterBindingIdentifierPaths = getOuterBindingIdentifierPaths;
+```
+### introspection.js相关api
+此文件包含负责为某些值内省当前路径的方法。
+```js
+//  输入一个pattern,返回符合条件的节点
+exports.matchesPattern = matchesPattern;
+//  输入一个key，判断当前节点是否含有这个属性
+exports.has = has;
+//  判断是否是静态节点
+exports.isStatic = isStatic;
+//  节点是否不含有某个输入的key,与has相反
+exports.isnt = isnt;
+//  传入key和value,判断当前节点上key对应的值是否等于value
+exports.equals = equals;
+//  输入类型字符串，判断当前节点的类型是否和出入的类型相等
+exports.isNodeType = isNodeType;
+//  判断当前路径是合处在for循环中。因为for玄幻中允许穿线编订生命和普通的表达式，我们需要告诉path的replactment相关方法
+//  在这里替换掉表达式是ok的
+exports.canHaveVariableDeclarationOrExpression = canHaveVariableDeclarationOrExpression;
+exports.canSwapBetweenExpressionAndStatement = canSwapBetweenExpressionAndStatement;
+exports.isCompletionRecord = isCompletionRecord;
+exports.isStatementOrBlock = isStatementOrBlock;
+exports.referencesImport = referencesImport;
+exports.getSource = getSource;
+exports.willIMaybeExecuteBefore = willIMaybeExecuteBefore;
+exports._guessExecutionStatusRelativeTo = _guessExecutionStatusRelativeTo;
+exports._guessExecutionStatusRelativeToDifferentFunctions = _guessExecutionStatusRelativeToDifferentFunctions;
+exports.resolve = resolve;
+exports._resolve = _resolve;
+exports.isConstantExpression = isConstantExpression;
+exports.isInStrictMode = isInStrictMode;
+exports.is = void 0;
 ```
