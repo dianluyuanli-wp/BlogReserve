@@ -213,20 +213,90 @@ exports.isnt = isnt;
 exports.equals = equals;
 //  输入类型字符串，判断当前节点的类型是否和出入的类型相等
 exports.isNodeType = isNodeType;
-//  判断当前路径是合处在for循环中。因为for玄幻中允许穿线编订生命和普通的表达式，我们需要告诉path的replactment相关方法
+//  判断当前路径是合处在for循环中。因为for循环中允许变量声明和普通的表达式，我们需要告诉path的replactment相关方法
 //  在这里替换掉表达式是ok的
 exports.canHaveVariableDeclarationOrExpression = canHaveVariableDeclarationOrExpression;
+//  这个方法减产我们是否在将箭头函数转换为表达式或者代码块（反之亦然），这是因为
+//  箭头函数会隐式地返回表达式，这和块语句类似
 exports.canSwapBetweenExpressionAndStatement = canSwapBetweenExpressionAndStatement;
+//  判断当前路径是否指向一个完成的记录（是否是一个容器的最后的节点）
 exports.isCompletionRecord = isCompletionRecord;
+//  判断当前的节点是否允许单独的声明或者块声明，以便我们在必要的时候展开
 exports.isStatementOrBlock = isStatementOrBlock;
+//  判断当前的指定路径引用了moduleSource的importName
 exports.referencesImport = referencesImport;
+//  获取当前节点对应的源码
 exports.getSource = getSource;
+//  有可能会提前执行
 exports.willIMaybeExecuteBefore = willIMaybeExecuteBefore;
+//  传入一个节点，判断其执行状态是否和当前的节点相关
 exports._guessExecutionStatusRelativeTo = _guessExecutionStatusRelativeTo;
 exports._guessExecutionStatusRelativeToDifferentFunctions = _guessExecutionStatusRelativeToDifferentFunctions;
+//  将一个指针node节点指向绝对路径
 exports.resolve = resolve;
 exports._resolve = _resolve;
+//  是否是固定表达式
 exports.isConstantExpression = isConstantExpression;
+//  是否处于严格模式
 exports.isInStrictMode = isInStrictMode;
+//  has的别名
 exports.is = void 0;
 ```
+### modification.js相关api
+```js
+//  在当前节点之前插入目标节点
+exports.insertBefore = insertBefore;
+//  传入位置和节点，在对应的位置插入节点
+exports._containerInsert = _containerInsert;
+//  在目标节点之前插入
+exports._containerInsertBefore = _containerInsertBefore;
+//  在目标节点之后插入
+exports._containerInsertAfter = _containerInsertAfter;
+//  在当前的节点之后插入，但在一个表达式之后插入的时候，确保完成记录是正确的
+exports.insertAfter = insertAfter;
+//  传入两个参数（起点，终点），更新期间所有兄弟节点的路径
+exports.updateSiblingKeys = updateSiblingKeys;
+//  校验节点列表
+exports._verifyNodeList = _verifyNodeList;
+//  容器列表头部新增一个元素
+exports.unshiftContainer = unshiftContainer;
+//  容器列表尾部新增一个元素
+exports.pushContainer = pushContainer;
+//  尽可能提升当前节点的作用域，并且返回一个可以引用的uid
+exports.hoist = hoist;
+```
+### removal.js相关api
+移除节点相关的api
+```js
+//  移除当前节点
+exports.remove = remove;
+//  从作用域中移除
+exports._removeFromScope = _removeFromScope;
+//  是否调用移除钩子
+exports._callRemovalHooks = _callRemovalHooks;
+//  内部的remove实现
+exports._remove = _remove;
+//  标记移除
+exports._markRemoved = _markRemoved;
+//  声明某个节点不可以出
+exports._assertUnremoved = _assertUnremoved;
+```
+### replacement.js相关api
+跟节点替换相关api
+```js
+//  将当前节点替换为一系列节点（出入的是一个节点数组），该方法按照以下步骤执行
+//  1、继承传入的第一个节点的注释 2、在当前的节点后插入传入的节点 3、删除当前节点
+exports.replaceWithMultiple = replaceWithMultiple;
+//  将传入字符串作为表达式解析，并且将当前的节点替换为解析的结果
+//  这个方法很方便，但是是反模式的，不建议使用，这会使你的应用很脆弱
+exports.replaceWithSourceString = replaceWithSourceString;
+//  将当前节点替换为另一个
+exports.replaceWith = replaceWith;
+//  内部实现
+exports._replaceWith = _replaceWith;
+//  输入一个声明数组并且将他们在表达式中展开。这个方法将会保持完整的记录，这对于维护原始的语义非常重要
+exports.replaceExpressionWithStatements = replaceExpressionWithStatements;
+//  替换行内内容
+exports.replaceInline = replaceInline;
+```
+
