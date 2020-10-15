@@ -69,6 +69,7 @@ module.exports = function (babel) {
 关于babel插件的具体写法，笔者之前写过一篇[文章]()，里面有babel原理的详细分析，可以参考。这里再简单讲解下原理，。babel插件本质是一个函数，入参是babel的实例，返回值是一个对象，里面的`visitor`用来匹配目标内容，这里的
 `ObjectProperty`表示遇到对象属性时进入执行逻辑，类似地，`FunctionDeclaration`表示遇到函数定义时进入操作逻辑，此外还有`BinaryExpression`(二元表达式)、`Identifier`(标识符)等等的visitor入口函数。babel将代码解析成抽象语法树之后，我们可以用上面提到的这些类型匹配函数来找到目标代码的位置，具体可以参考[@babel/types](https://www.babeljs.cn/docs/babel-types)。这里顺便吐槽下，官方的文档给的十分粗糙，只有非常含混的类型定义，也没有使用例子，全看个人领悟力，不参考其他babel插件的写法来配合理解根本不知道什么意思(参考一些官方插件的写法)，体验极差。`ObjectProperty`的入参是path,表示当前正在检查的节点的路径，可以配合AST生成工具来配合理解,在笔者的那篇[博文]()中有详解。`t.objectProperty`表示构造一个对象属性节点，其接受两个参数，第一个参数`t.identifier(load)`表示key为load,第二个参数`t.nullLiteral()`表示生成一个null。
 # babel插件常用api
+行文至此，顺便梳理下babel中的一些api,市面上很少有这方面的内容，一般都是讲解插件配置和一些demo插件的编写。以下的内容都是参考源码和注释得来的。
 ## path相关api
 有关`path`相关的源码都在`@babel/traverse`这个目录下。想要查找到符合条件的节点并进行各种各样的操作，都要依赖这部分的api,官方文档基本等于没有，相关api的用法只有自己扒源码，源码中的api功能大致通过名字可以猜出来，大家可以先有个印象，以后有对应的需求再去查找具体用法。
 ### ancestry.js相关api
@@ -299,4 +300,13 @@ exports.replaceExpressionWithStatements = replaceExpressionWithStatements;
 //  替换行内内容
 exports.replaceInline = replaceInline;
 ```
+## types相关api
+`@babel/traverse`提供的海量方法能够使我们对节点进行查找和替换各种操作，搭配`@babel/types`,让开发者能够自行拼装AST,从而"创造"出新的代码，types相关的api非常多，建议浏览一下[官网](https://www.babeljs.cn/docs/babel-types),在使用的过程中再查找对应的api。
 
+# 总结
+babel是前端的大杀器，是前端能力进阶的试金石，掌握之后，开启无限可能。
+
+# 参考资料
+[文中例子代码](https://github.com/dianluyuanli-wp/myBabel/tree/master/progressJson)  
+[babel插件分析-编写你的第一个插件]()  
+[babel源码仓库](https://github.com/babel/babel/tree/master/packages)  
