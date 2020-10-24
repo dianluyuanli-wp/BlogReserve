@@ -73,6 +73,53 @@ JSON模块现在遵从协议的规定，如果使用非默认的输出是将会�
 尽管使用了默认导出方式，设置`optimization.usedExports`会使得没有使用到的属性被丢弃。设置`optimization.mangleExport`绘制的属性名被破坏性优化（译者注：属性名会被修改，减少字符数）.  
 可以通过在`rule.parser.parse`中指定JSON的解析器来引入类似JSON结构的文件,比如toml,yaml,json5等等
 ## import.meta
+* `import.meta.webpackHot`是`module.hot`的别名，这个在严格模式下的ESM中也是生效的
+* `import.meta.webpack`是webpack的主版本号
+* `import.meta.url`是当前文件的文件url（类似于`__filename`,但是作为文件的url）
+## asset模块
+webpack 5对表示assets的模块有原生支持。这些模块要么将一个文件放入输出文件夹，要么将一个DataURI放入javascript打包文件中。这两种方式都提供了一个URL。  
+可以通过多种方式引用：  
+* 老方法：`import url from "./image.png"`并且在`module.rules`中设置`type: "asset"`（当improt的方式匹配的时候）
+* 新方法：`new URL("./image.png", import.meta.url)`  
+这里的新方法预发允许代码在未打包的情况下运行，这个语法在原生ECMAScript模块中可以在浏览器中执行。
+## 原生worker支持
+当`new URL`和`new Worker / new ShareWorker / navigator.serviceWorker.register`等一起使用的时候，webpack将会为web worker生成一个单独的入口。  
+`new Worker(new URL("./worker.js", import.meta.url))`  
+这个语法也允许在未打包的情况下使用。在原生ECMAScript模块这样使用在浏览器中也是支持的。
+## URIs
+webpack 5支持控制接口请求中的协议。  
+* `data:` 支持。Base64或者原始的编码内容都支持。Mimetype能够被映射到`module.rules`中的各个loader。例如：`import x from "data:text/javascript,export default 42"`
+* `file:` 支持
+* `http(s):`支持。但是需要配置`new webpack.experiments.schemesHttp(s)UriPlugin()`
+***默认情况下目标是web，这些URIs用来获取外部资源（都属于externals）
+请求中的分块也是支持的,例如：`./file.js#fragment`
+## 异步模块
+webpack 5支持所谓的异步模块。这些模块并不会同步执行，他们被异步的promise来替代了。  
+通过`import`引入的模块会被自动处理，并不需要额外的操作，这其中的差别几乎无法识别。  
+通过`require()`引入的模块，将会返回一个promise，这个promise的resolve返回原先的exports.  
+在webpack中，有多个方法引入异步模块：  
+* 异步externals(async externals)
+* 新规范中的WebAssembly 模块
+* 使用顶层await 的ECMAScritp模块
+## Externals 
+webpack 5中引入了额外的外部文件(external)类型来应对更多的应用场景：  
+`promise:`一个返回Promise的表达式。外部的模块是异步的，并且promise resolve的值就是模块的exports.
+`import:`原生的`import()`是用来加在特定请求的。外部的模块是异步模块。  
+`module:`暂时没有实现，但是打算通过`import x from "..."`来实现加载模块的功能  
+`script:`通过`<script`标签来加载url,通过一个全局变量来获取其输出（包括他的属性，如果存在的话），这里external的模块是一个异步模块
+# 主要变化之新的node.js生态系统特性
+# resolving
+在package.json中支持使用`exports`和`imports`。  
+Yarn PnP现在原生支持。  
+更多细节请查看[包导出](https://webpack.js.org/guides/package-exports/)
+# 主要变化之开发体验
+## 构建目标优化
+webpack 5允许传入一个构建目标列表，可以精细化控制构建目标的版本。  
+例如：`target: "node14" target: ["web", "es2020"]`  
+这是一个给webpack提供所构建目标信息的方法，告诉构建需要：  
+* chunk的下载机制
+* 支持的语法
+
 
 
 
