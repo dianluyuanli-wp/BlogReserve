@@ -116,9 +116,27 @@ Yarn PnP现在原生支持。
 ## 构建目标优化
 webpack 5允许传入一个构建目标列表，可以精细化控制构建目标的版本。  
 例如：`target: "node14" target: ["web", "es2020"]`  
-这是一个给webpack提供所构建目标信息的方法，告诉构建需要：  
+这是一个给webpack提供所构建目标信息的方法，告诉构建需要什么，比如：  
 * chunk的下载机制
 * 支持的语法
+## stats
+stats的测试格式提升了可读性，降低了配置的繁琐性。默认配置变的更加简洁并对也适用于大型项目的构建。
+* Chunk之间的关系现在被默认隐藏了。可以通过`stats.chunkRelations`来开启。
+* stats现在会区分`file`和`auxiliaryFiles`
+* stats现在回默认隐藏module和chunk的id，可以通过`stats.ids`开启
+* modules的列表心在会按照其距离入口文件的距离来排序。这个可以通过`stats.modulesSort`来调整
+* chunk列表现在的顺序是通过module的名字来排序。这个可以通过`stats.chunkModulesSort`来调整
+* 串联模块(concatenated module)中的嵌套模块列表将根据拓扑顺序进行排序。可以通过`stats.nestedModulesSort`来调整
+* Chunks和Assets现在会展示id提示
+* Assets和module将会进行树形展示，以前是表格形式展示
+* 通用信息的总结会在构建流程的最后展示，它展示webpack的版本，配置的名字和报错、告警的数量
+* hash现在会被默认隐藏，可以在`stats.hash`中进行配置
+* 构建的时间戳现在不会默认展示。可以在`stats.builtAt`中进行设置。在最后构建最后的的总结输出中将会展示时间戳
+* 子编译过程现在默认不会展示。可以通过`stats.children`进行配置。
+## 过程
+`ProgressPlugin`进行了一定的优化，通过`--progress`可以在CLI中进行优化，同时也可以作为一个插件手动添加。  
+它过去只会记录已完成的模块数。现在可以对入口数，依赖数等进行计数，他们都会被默认展示。  
+过去它只会展示当前正在进行的模块。这会导致过多的错误输出，在有一些console的情况下甚至会导致性能问题。这个特性现在被默认关闭。
 
 
 
