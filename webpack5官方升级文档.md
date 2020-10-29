@@ -144,6 +144,60 @@ new webpack.ProgressPlugin({ percentBy: 'entries' });
 为了使得进程计算的百分比足够精确，`ProgressPlugin`将会缓存已知的总模块数并且在下一次构建中重用。第一次启动的时候会热启动缓存，后续的构建中会使用并且更新这份缓存。
 ## 自主区别命名
 在webpack 4中，多个webpack在同一个html中运行时会产生冲突，因为他们使用同样的全局变量来做chunk的加载。为了修复，需要在`output.jsonpFunction`配置项中提供一个通用的名字。  
-webpack 5现在自动从`package.json`引入了一个独一无二的名字,并且使用它来作为`output.uniqueName`的内容。
+webpack 5现在自动从`package.json`引入了一个独一无二的名字,并且使用它来作为`output.uniqueName`的内容。  
+这个值将会用来给所有潜在会冲突的全局变量独一无二。  
+迁移：为了实现独一无二的命名，可以移除`package.json`中的`output.jsonFunction`。
+## 自动的公共路径
+webpack 5将会尽可能地自动配置`output.publicPath`。
+## typescript 类型
+webpack 5源码支持typescript,并且通过npm包进行了引入。  
+迁移：移除`@types/webpack`,请在名称不同时更新引用。
+# 主要改动之优化（Optimization）
+## 嵌套的树摇(tree-shaking)
+webpack现在可以追踪输出内容的嵌套属性。这将在再次导出(reexporting)命名空间对象的时候提审tree shaking（移除没有使用的属性）的性能。
+```js
+// inner.js
+export const a = 1;
+export const b = 2;
 
+// module.js
+export * as inner from './inner';
+// or import * as inner from './inner'; export { inner };
 
+// user.js
+import * as module from './module';
+console.log(module.inner.a);
+```
+在上述的例子中，变量b(没有引用)将会在生产环境中被移除
+## 内部模块树摇
+webpack 4中不会分析模块输入和输入之间的依赖。webpack 5有一个新的配置项`optimization.innerGraph`，在生产环境中默认开启。这个配置会进行对模块中的符号进行分析，找出从输入到输出的依赖。来看看下面这个例子：
+```js
+import { something } from './something';
+
+function usingSomething() {
+  return something;
+}
+
+export function test() {
+  return usingSomething();
+}
+```
+内部图算法将会发现`something`只有在`test`被导出的时候才会使用。这会将很多没有使用过的内容打上标志位，以便在打包文件中移除。  
+当`"sideEffects": false`这样设置的时候，这将会移除更多的模块。在这个例子中`./something`将会被移除，如果`test`没有被使用。  
+为了获得更多的关于没有使用的导出的信息,`optimization.unusedExports`需要被设置。为了移除没有副作用的模块，需要设置`optimization.sideEffects`。  
+下面的语法符号在打包过程中将会被分析:  
+* 函数声明
+* 类声明
+* 包含以下内容的`export default`和变量声明  
+    - 函数表达式
+    - 类表达式
+    - 序列表达式
+    - `/*#__PURE__*/`表达式
+    - 本地变量
+    - imported 绑定
+    - 内容
+反馈：在这个过程中如果你发现遗漏了什么没有列举出来，请给我们提issue,我们将会考虑加上。  
+在模块中使用`eval()`将会使得这个优化失效，因为eval执行的代码内部可能引用域内的所有变量。  
+这个优化也叫作深度作用域分析（Deep Scope Analysis）。
+## commonJs 树摇
+webpack
