@@ -200,4 +200,19 @@ export function test() {
 在模块中使用`eval()`将会使得这个优化失效，因为eval执行的代码内部可能引用域内的所有变量。  
 这个优化也叫作深度作用域分析（Deep Scope Analysis）。
 ## commonJs 树摇
-webpack
+webpack过去在针对Commonjs导出的资源，或者使用`require()`导出的资源不尽兴然和的特殊处理。  
+webpack 5增加了对Commonjs结构的支持，使得可以移除未使用的Commonjs输出并且从`require()`调用中追踪被引用的导出内容的名字。  
+这个新特性支持下面的结构:  
+* `exports|this|module.exports.xxx = ...`
+* `exports|this|module.exports = require("...") (reexport)`
+* `exports|this|module.exports.xxx = require("...").xxx (reexport)`
+* `Object.defineProperty(exports|this|module.exports, "xxx", ...)`
+* `require("abc").xxx`
+* `require("abc").xxx`
+* 来自ESM的导入
+* 通过`require()`引用一个 ESM
+* 标记输出类型（特别处理非严格模式的ESM导入）
+    * `Object.defineProperty(exports|this|module.exports, "__esModule", { value: true|!0 })`
+    * `exports|this|module.exports.__esModule = true|!0`
+* 未来有可能支持更多的结构
+如果探测到无法分析的代码，webpack将会放弃追踪所有导出的信息(出于性能考虑)
