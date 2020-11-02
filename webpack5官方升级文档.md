@@ -230,4 +230,26 @@ webpack 5现在能够在每次运行的时候去分析和优化模块（默认�
 `import()`允许手动树摇模块，即通过类似`/* webpackExports: ["abc", "default"] */`这样的注释来指定。
 ## 开发与生产环境的相似性
 我们通过提升开发模式和生产模式的相似性，来尽量在开发环境的构建性能和避免生产环境独有的问题之间找平衡。  
-webpack 5在开发和生产模式中都开启了`sideEffects`优化。在webpack 4中，由于
+webpack 5在开发和生产模式中都开启了`sideEffects`优化。在webpack 4中，由于`sideEffects`标记的错误，这个优化会导致一些只在生产环境才会出现的问题。在开发环境中页开启这个优化使得潜在的问题能够更早地暴露。  
+在很多时候，开发环境和生产环境是在文件系统大小写名感性不同的操作系统中运行的。webpack 5针对一些不合常理的大小写增加了新的错误和告警。
+## 代码生成过程的提升
+webpack会探测ASI(auto semicolon insertion，简称ASI, 译者注)，同时没有分号插入的时候会产生更短的代码`Object(...) -> (0, ...)`  
+webpack会把对个输出的getter合并到一个运行时的函数调用中：`r.d(x, "a", () => a); r.d(x, "b", () => b); -> r.d(x, {a: () => a, b: () => b});`  
+现在webpack有一个新的配置项`output.environment`。这个配置会告诉webpack在运行时代码中可以使用哪些`ECMAScript`的特性。通常情况下不会直接指定这个配置项，而是在`target`中进行配置。  
+webpack 4过去只会生成ES5的代码。webpack 5现在可以生成ES5和ES6/ES2015的代码。  
+如果只考虑支持现代浏览器的话，可以使用箭头函数将会让生成的代码将会更短。使用带TDZ(暂时性死区 temporal dead zone,译者注)const声明会生成更多符合规范的代码。  
+## 优化`target`配置
+在webpack 4中，`target`是一个很粗略的介于`web`和`node`之间的配置项（或者其他的目标）。webpack 5现在开放了更多的选项。  
+现在的`target`配置会比以往影响更多的生成代码。  
+* chunk加载的方法
+* chunk的格式
+* wasm加载的方法
+* 在worker中chunk和wasm加载的方法
+* 全局对象的使用
+* publicPath是否应该被自动指定
+* ECMAScript 特性和预发在生成代码中的使用
+* `externals`默认开启
+* 部分Node.js兼容层的行为（`global`, `__filename`, `__dirname`）
+* 解析modules(`browser`域，`exports`和`imports`条件)
+* 部分loader可能会改变上面的行为
+因为以上列举的原因，`web`和`node`之间的选择太粗略了，我们需要更多的信息
