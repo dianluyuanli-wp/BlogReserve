@@ -252,4 +252,29 @@ webpack 4过去只会生成ES5的代码。webpack 5现在可以生成ES5和ES6/E
 * 部分Node.js兼容层的行为（`global`, `__filename`, `__dirname`）
 * 解析modules(`browser`域，`exports`和`imports`条件)
 * 部分loader可能会改变上面的行为
-因为以上列举的原因，`web`和`node`之间的选择太粗略了，我们需要更多的信息
+因为以上列举的原因，`web`和`node`之间的选择太粗略了，我们需要更多的信息.因而我们允许指定一个最小版本，比如`node10.13`并且推断更多的目标环境的属性。  
+现在还可以将多个目标与数组组合，webpack将会找出所有目标的最小兼容属性。当使用没有提供完整信息（如“web”或“node”（没有版本号）的目标时，使用数组也很有用。例如`['web','es2020']`将会整合这两个部分的目标。  
+这里有一个目标`browserslist`,将会使用浏览器列表属性去决定环境的属性。当这里有一个可用的browserslist配置可用的时候，这就是webpack的默认target。如果没有，`web`将会成为默认的target。  
+一些组合和特性在当前版本中并没有实现，并且会抛出错误。他们是为未来的特性准备的，例如：  
+* `["web","node"]`将会让输出使用通用的chunk加载方法，但是这个目前没有实现。
+* `["web","node"]` + `output.module: true`将会让输出使用module chunk加载方法，目前没有实现。
+* `"web"`将会使用`http(s):`来引入那些被认为是模块的external,目前并没有实现(折中方法：`externalsPresets: {web: false, webAsync: true}`，这样将会使用`import()`来加载模块)  
+## chunk分割和module的大小
+modules现在并不单单使用数字来标识大小。现在有不同的的size类型。  
+splitChunksPlugin现在知道如何使用这些不同的大小，并将他们应用于`minSize`和`maxSize`。在默认情况下，只有`javascript`的大小会被计算，你可以传入多个值来控制计算的范围：
+```js
+module.exports = {
+  optimization: {
+    splitChunks: {
+      minSize: {
+        javascript: 30000,
+        webassembly: 50000,
+      }
+    }
+  }
+};
+```
+你依然可以只使用数字来标记大小。在这种情况下，webpack将会自动使用默认的size类型。  
+`mini-css-extract-plugin`使用`css/mini-extra`作为size类型，并且将这个size类型叫到了默认的types中。
+# 主要变动之性能
+## 持久化缓存
