@@ -278,3 +278,27 @@ module.exports = {
 `mini-css-extract-plugin`使用`css/mini-extra`作为size类型，并且将这个size类型叫到了默认的types中。
 # 主要变动之性能
 ## 持久化缓存
+webpack现在将使用文件系统缓存。这个是可配置的，能够通过下面的配置开启：
+```js
+module.exports = {
+  cache: {
+    // 1. Set cache type to filesystem
+    type: 'filesystem',
+
+    buildDependencies: {
+      // 2. Add your config as buildDependency to get cache invalidation on config change
+      config: [__filename]
+
+      // 3. If you have other things the build depends on you can add them here
+      // Note that webpack, loaders and all modules referenced from your config are automatically added
+    }
+  }
+};
+```
+重点注意：  
+默认情况下，webpack会假设`node_modules`的文件路径只会被package manager改动。针对`node_modules`的hash和时间戳机制被抛弃了了。现在只有包的名字和版本会被考虑进来。系统全局的链接是可用的，只要`resolve.symlink: false`没有被设置（尽量避免这样做）。请不要直接修改`node_modules`下的内容，除非你决定通过`snapshot.managedPaths: []`来关闭对应的优化。当使用yarn Pnp时，webapck会假定yarn缓存是不可变的(通常情况下是这样)。你可以通过设置`snapshot.immutablePaths: []`来关闭这个优化。  
+缓存内容将会被放在`node_modules/.cache/webpack`目录下（但使用node_modules时）.默认情况（使用yarn PnP）下缓存放在`.yarn/.cache/webpack`,通常情况下你不用手动删除过这些缓存，前提是所有的插件都有正确处理缓存。  
+许多内部插件也会使用持久化缓存。例如:`SourceMapDevToolPlugin`(混窜生成的sourceMap),`ProgressPlugin`(缓存模块数)。  
+持久化缓存将会自动根据用途创建多个缓存文件，以便优化读写过程。  
+默认情况下，时间戳将会在开发环境下被用来做快照，在生产环境下将会使用文件hash.文件hash同样支持在CI上使用持久化缓存。
+### 编译器闲置和关闭
