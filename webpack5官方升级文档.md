@@ -314,5 +314,20 @@ webpack过去在第一次构建的时候将会输出所有的文件，在增量�
 那些被标记为`immutable`的文件(包括内容hash),只要已经存在一个同名文件，将永远不会被写入。我们假设文件hash将会同文件内容一起改变。这个假设绝大多数时候是成立的。但是在webpack或者插件的开发过程中是可能不是这样。  
 # 主要变化之一些长期存在的突出问题
 ## 单文件目标的代码分割
-以前那些只能通过代文件来启动的项目（比如node，webworker,electron主程序），现在支持在运行时初始化的或城中加载所需要的依赖片段。  
-这使得可以用`opimization.splitChunks`来针对这些目标文件。
+以前那些只能通过单文件来启动的项目（比如node，webworker,electron主程序），现在支持在运行时初始化的过程中加载所需要的依赖。  
+这使得在`chunks: "all"`时可以用`opimization.splitChunks`和`optimization.runtimeChunk`来针对这些目标文件。  
+注意这些目标文件的chunk加载是异步的。这使得初始的评估过程也是异步的。在`output.library`时可能会产生问题，因为现在导出的值是promise。  
+## 更新resolver
+webpack 5现在支持`enhanced-resolve`。现在做了如下优化：  
+* 会追踪更多的依赖，比如一些小事的文件
+* aliasing现在可能有多个可选项
+* aliasing现在可以是false
+* 支持类似`exports`和`imports`这样的特性
+* 性能提升
+## 非js的chunk
+不含js代码的chunks将不再生成js文件。现在允许chunk只含有css.
+# 主要改动之未来特性
+## 实验
+在开始的时候不是所有的特性都是稳定的。在webpack 4中我们增加了测试特性并且在changelog中进行了标注，但是在配置中这些特性是否是实验性的并不直观。  
+在webpack 5中，有一个新的`experiments`配置项能够用来开启实验中的特性。这可以直观地看到哪些特性被开启。
+webpack这里使用的是语义化的版本。这里将会使用一个错误来作为实验特性。
