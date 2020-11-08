@@ -330,4 +330,65 @@ webpack 5现在支持`enhanced-resolve`。现在做了如下优化：
 ## 实验
 在开始的时候不是所有的特性都是稳定的。在webpack 4中我们增加了测试特性并且在changelog中进行了标注，但是在配置中这些特性是否是实验性的并不直观。  
 在webpack 5中，有一个新的`experiments`配置项能够用来开启实验中的特性。这可以直观地看到哪些特性被开启。
-webpack这里使用的是语义化的版本。这里将会使用一个错误来作为实验特性。
+虽然webpack遵循语义版本控制，但它将为实验性功能提供一个例外。  
+实验特性在小版本中有可能会含有破坏性的变更。当这种情况发生的时候，我们将会在changelog中新增清晰的记录。这会使我们在维护实验特性的时候更快，同时也允许我们在主要版本上停留更长时间以获得稳定的功能。  
+下面的这些实验特性将会封装在webpack 5中：
+* webpack 4中对于老webassembly的支持(`experiments.syncWebAssembly`)
+* 根据更新的特性，对新webassembly的支持(`experiments.asyncWebAssembly`)
+  * 这使得一个webassembly模块成为一个异步模块
+* 顶层await提案的支持（`experiments.topLevelAwait`）
+  * 在顶层模块shiyong`await`使得这个模块成为异步模块。
+* 将输出打包文件作为模块（`experiments.outputModule`）
+  * 现在从打包文件中移除了IIFE( Immediately Invoked Function Expression 立即执行函数表达式)包裹器，增强了严格模式，通过`<script type="module">`来懒加载内容，模块模式中的最小化。
+这也意味着现在默认支持`webassembly`.
+## 最小node版本支持
+现在支持的最小node版本从6迁移到10.13.0.  
+迁移： 升级node到最新的可用版本。
+# 配置的修改
+## 架构变化
+* `entry: {}` 现在允许传入一个空对象（可以使用插件来添加入口）
+* `target` 支持数组、版本和浏览器列表
+* `cach: Object` 移除： 不能设置内容缓存对象
+* `cache.type` 新增：有两个可选项：`memory`和`filesystem`
+* 针对`cache.type = "filesystem"`有新的配置项：
+  * `cache.cacheDirectory`
+  * `cache.name`
+  * `cache.store`
+  * `cche.hashAlgorighm`
+  * `cache.idleTimeout`
+  * `cache.idleTimeoutForInitialSotre`
+  * `cache.buildDependencies`
+* 新增`snapshot.resolveBuildDependencies`
+* 新增`snapshot.resolve`
+* 新增`snapshot.module`
+* 新增`snapshot.managedPaths`
+* 新增`snapshot.immutablePaths`
+* 新增`resolve.cache`,允许开启或者关闭resolve缓存
+* 移除`resolve.concord`
+* `resolve.alias`的值能够为数组或者false
+* 新增`resolve.restrictions` 允许限制潜在的resolve结果
+* 新增`resolve.fallback` 允许对无法解析的请求进行别名
+* 新增`resolve.preferRelative` 允许将模块的解析请求也看做相对请求
+* 对于Node.js的的自动适配被移除
+  * `node.Buffer`被移除
+  * `node.console`被移除
+  * `node.process`被移除
+  * `node.*`(Node.js原生模块)被移除
+  * 迁移：使用`resolve.alias`和`ProviderPlugin`。有报错时将会有提示（请参阅[node-libs-browser](https://github.com/webpack/node-libs-browser)了解v4中的polyfill和mock是怎样做的）
+* `output.filename` 现在支持传入函数
+* 新增`output.assetModuleFilename`
+* `output.jsonpScriptType`重命名为`output.scriptType`
+* `devtool`现在更加严格
+  * 格式：`false | eval | [inline-|hidden-|eval-][nosources-][cheap-[module-]]source-map`
+* `optimization.chunkIds`,新增`"deterministic"`配置
+* `optimization.moduleIds`新增`"deterministic"`配置
+* `optimization.moduleIds`新增`"hashed"`配置
+* `optimization.moduleIds`移除`"total-size"`
+* 多个关于模块和chuank的标志位被移除
+  * 移除`optimization.hashedModuleIds`
+  * 移除`optimization.namedChunks`,`NamedChunksPlugin`也被移除
+  * 移除`optimization.namedModules`，`NamedModulesPlugin `也被移除
+  * 移除`optimization.occurrenceOrder`
+  * 迁移：使用`chunkIds`和`moduleIds`
+* 
+
