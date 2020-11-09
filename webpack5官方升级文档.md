@@ -390,5 +390,45 @@ webpack 5现在支持`enhanced-resolve`。现在做了如下优化：
   * 移除`optimization.namedModules`，`NamedModulesPlugin `也被移除
   * 移除`optimization.occurrenceOrder`
   * 迁移：使用`chunkIds`和`moduleIds`
-* 
+* `optimization.splitChunks` `test`不在匹配chunk的名字
+  * 迁移：使用一个test函数(module, { chunkGraph }) => chunkGraph.getModuleChunks(module).some(chunk => chunk.name === "name")
+* 新增`optimization.splitChunks` `minRemainingSize`
+* `optimization.splitChunks` `filename`现在可以为函数
+* `optimization.splitChunks` size现在能够为一个包含每个来源类型和size的映射对象
+  * `minSize`
+  * `minRemainingSize`
+  * `maxSize`
+  * `maxAsyncSize`
+  * `maxInitialSize`
+* `optimization.splitChunks` `maxAsyncSize` 和 `maxInitialSize`新增了`maxSize`:允许定义不同的初始化chunk和异步chunk的最大size
+* `optimization.splitChunks` `name:true`被移除：现在不支持自动命名
+  * 迁移: 使用默认配置。`chunkIds: "named"`将会为你的构建文件提供有意义的名字，方便debug
+* `optimization.splitChunks.cacheGroups[].idHint`新增：提供一个提示，说明如何选择命名chunk id
+* `optimization.splitChunks` `automaticNamePrefix`被移除
+  * 迁移： 使用`idHint`来替代
+* `optimization.splitChunks` `filename` 不再局限于初始chunk
+* `optimization.splitChunks` `usedExports`在比较模块的时候将会包括已使用的导出
+* `optimization.splitChunks.defaultSizeTypes`新增：当使用具体数字来标识size时的大小类型
+* 新增`optimization.mangleExports`
+* `optimization.minimizer` `"..."`能够被用来引用默认内容
+* `optimization.usedExports` 新增`"global"`配置，允许能能够关闭每次运行时的分析改在全局做（出于性能考虑）
+* `optimization.noEmitOnErrors`重命名为`optimization.emitOnErrors`，相关逻辑也进行了翻转
+* 新增`optimization.realContentHash`
+* 移除`output.devtoolLineToLine`
+  * 迁移：没有兼容方案
+* `output.chunkFilename` 现在允许传入函数
+* `output.hotUpdateChunkFilename`,现在不允许传入函数，传入也不会生效
+* `output.hotUpdateMainFilename` 现在不允许传入函数，传入也不会生效
+* `output.importFunctionName` 字符串可以指定用来替换`import()`的方法名，以便用来兼容不支持的环境
+* 新增`output.charset` 将这个设置为false可以移除script标签上的`charset`属性
+* `output.hotUpdateFunction`改名为`output.hotUpdateGlobal`
+* `output.jsonpFunction`改名为`output.chunkLoadingGlobal`
+* `output.chunkCallbackFunction`改名为`output.chunkLoadingGlobal`
+* 新增`output.chunkLoading`
+* 新增`output.enabledChunkLoadingTypes`
+* 新增`output.chunkFormat`
+* `module.rules`内部的`resolve`和`parser`将会使用另外一种方式合并配置（对象将会深度merge，数组将会通过`...`来引用上一个值）
+* `module.rules` `parser.worker`新增，允许配置对worker的支持
+* `module.rules`下移除`query`和`loaders`
+* `module.rules` `options`不再支持传入字符串
 
