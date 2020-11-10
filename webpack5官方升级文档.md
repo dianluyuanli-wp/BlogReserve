@@ -431,4 +431,32 @@ webpack 5现在支持`enhanced-resolve`。现在做了如下优化：
 * `module.rules` `parser.worker`新增，允许配置对worker的支持
 * `module.rules`下移除`query`和`loaders`
 * `module.rules` `options`不再支持传入字符串
+  * 迁移：传入一个对象，如果不支持的话可以提issue
+* `module.rules` 新增`mimetype`，允许匹配DataURI的mimetype
+* `module.rules` 新增`descriptionData`,允许匹配package.json中的数据
+* `module.defaultRules` 可以使用`"..."`来引用默认配置
+* 新增`stats.chunkRootModules`展示chunk的根模块
+* 新增`stats.orphanModules` 显示未发出的模块
+* 新增`stats.runtime`,展示运行时的模块
+* 新增`stats.chunkRelations` 展示父、子、兄弟模块
+* 新增`stats.errorStack` 展示webpack内部对于错误堆栈的追踪
+* 新增`stats.preset` 选择一个预设值（preset）
+* 新增`stats.relatedAssets` 展示与其他assets相关的assets（比如sourceMap）
+* 为支持`ignoreWarnings`,现废弃`stats.warningsFilter`
+* `BannerPlugin.banner`签名修改
+  * 移除`data.basename`
+  * 移除`data.query`
+  * 迁移：从`filename`中抽出
+* `SourceMapDevToolPlugin` 移除`lineToLine`
+  * 迁移：没有替代
+* `[hash]` 完整编译过程中不再支持hash 
+  * 迁移：使用`[fullhash]`来替换其他的hash选项
+* `[modulehash]`被移除
+  * 迁移 使用`[hash]`来替代
+* `[moduleid]`被废弃
+  * 迁移：使用`[id]`来替代
+* `[filebase]` 被移除
+  * 迁移：使用`[base]`来替换
+* 基于文件的模板使用新的占位内容（例如 SourceMapDevToolPlugin）
+  * 
 
