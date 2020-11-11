@@ -458,5 +458,64 @@ webpack 5现在支持`enhanced-resolve`。现在做了如下优化：
 * `[filebase]` 被移除
   * 迁移：使用`[base]`来替换
 * 基于文件的模板使用新的占位内容（例如 SourceMapDevToolPlugin）
-  * 
+  * `[name]`
+  * `[base]`
+  * `[path]`
+  * `[ext]`
+* `externals` 当传入函数的时候，现在有不同的信号签名`({ context, request }, callback)`
+  * 迁移：改变签名
+* 新增`externalsPresets`
+* 新增`experiments` (请参见前文的Experiments部分)
+* 新增`watchOptions.followSymlinks`
+* `watchOptions.ignored` 现在可以为正则表达式
+* `webpack.util.serialization` 现在被暴露出来
+## 默认配置的修改
+* `target`现在默认值为`browserslist`(当浏览器列表配置有效的时候)
+* `module.unsafeCache`现在默认只对`node_modules`有效
+* `optimization.moduleIds`在生产环境下默认值为`deterministic`,而不是`size`
+* `optimization.chunkIds`在生产环境下默认值为`deterministic`,而不是`total-size`
+* `optimization.nodeEnv`在`none`模式下默认为`false`
+* `optimization.splitChunks.minSize`在生产环境下默认为`20k`
+* `optimization.splitChunks.enforceSizeThreshold`在生产环境下默认为`50k`
+* `optimization.splitChunks` `minRemainingSize`默认为`minSize`
+  * 这会使得剩余的部分非常小的时候，分割的chunk数目会更少
+* `optimization.splitChunks` `maxAsyncRequests`和`maxInitialRequests`默认增加到30
+* `optimization.splitChunks.cacheGroups.vendors`被重命名为`optimization.splitChunks.cacheGroups.defaultVendors`
+* `optimization.splitChunks.cacheGroups.defaultVendors.reuseExistingChunk`默认设置为`true`
+* `optimization.minimizer` 在简洁状态时目标默认使用`compress.passes: 2`
+* 当使用缓存时，`resolve(Loader).cache`默认为`true`
+* `resolve(Loader).cacheWithContext defaults`默认为`false`
+* `resolveLoader.extensions`移除`.json`
+* `node.global` `node.__filename`和`node.__dirname`在node-target时默认为`false`
+* `stats.errorStack` 默认为`false`
+# Loader相关改变
+## this.getOptions
+这个新的api将会简化loader的配置。允许传入一个JSON来校验，[查看详情](https://github.com/webpack/webpack/pull/10017)
+## this.exec
+这个方法在loader的上下文中被移除  
+迁移：现在可以由loader本身去实现
+## this.getResolve
+在loader API总，`getResolve(options)`将会合并各个不同的配置，请见`module.rules resolve`.  
+因为webpack5在不同的发布依赖项之间存在差异,所以建议传入`dependencyType`来作为配置(例如`"esm"`,`"commonjs"`)
+# 主要的内部改变
+以下的内容需要进一步调整
+接下来的内容主要跟插件作者相关：
+## 新的插件顺序
+webpack 5的插件会在默认配置项生效之前生效。这使得插件能够使用他们自己的默认值，或者使用传入的配置值。
+这是一个破坏性变更，因为插件不能依赖配置的值来生效了。  
+迁移：只能在插件钩子中访问配置。或者最好完全避免访问配置，并通过构造函数进行配置。
+## 运行时模块
+大量的运行时代码现在被移动到所谓的运行时模块中。这些特殊的模块负责添加运行时代码。他们将会被加入任何chunk中，并且总是会被加入到运行时chunk中。控制运行时模块的"运行时的需求"被添加到打包文件中。这将确保只有运行时代码会被添加到打包文件中。在未来，运行时模块将会被添加到一个需要被加载的chunk中，以便在需要的时候加载运行时代码。  
+在绝大多数情况下，核心的运行时逻辑允许在入口模块中插入行内内容，而不是调用`__webpack_require__`.如果在打包文件中没有其他的模块了，根本就不需要`__webpack_require__`。这很好地结合了模块连接（多个模块合并到一个模块）。  
+在理想状态下，是根本不需要运行时代码的。  
+迁移：如果你通过wepack插件在运行时中注入代码，可以考虑通过运行时模块来替换。
+## 序列化
+现在新增了序列化的机制，以便webpack中的能够对复杂对象进行序列化。语义化是可选的，所以需要被序列化的class需要被明确标记（他们的序列化已经实现）所有的模块，依赖和部分错误都已经完成了序列化。  
+迁移：当使用通过模块或者一来的时候，这里推荐使用序列化以便应用持久化缓存
+## 缓存插件
+添加了一个带有插件接口的缓存类。这个雷能够被用来对缓存进行读写。根据配置，不同的插件将会给缓存添加不同的功能。插件`MemoryCachePlugin`添加了内存缓存。`FileCachePlugin`将会添加持久化（文件系统）缓存。  
+`FileCachePlugin`使用序列化机制来从磁盘整持久化和存储缓存对象  
+## Object Frozen添加钩子
+带有钩子的类冻结了它们的hooks对象，因此不再能用这种方式添加自定义钩子
+
 
