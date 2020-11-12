@@ -516,6 +516,105 @@ webpack 5的插件会在默认配置项生效之前生效。这使得插件能�
 添加了一个带有插件接口的缓存类。这个雷能够被用来对缓存进行读写。根据配置，不同的插件将会给缓存添加不同的功能。插件`MemoryCachePlugin`添加了内存缓存。`FileCachePlugin`将会添加持久化（文件系统）缓存。  
 `FileCachePlugin`使用序列化机制来从磁盘整持久化和存储缓存对象  
 ## Object Frozen添加钩子
-带有钩子的类冻结了它们的hooks对象，因此不再能用这种方式添加自定义钩子
-
-
+带有钩子的类冻结了它们的hooks对象，因此不再能用这种方式添加自定义钩子  
+迁移：现在推荐使用WeakMap和一个静态的`getXXXHooks(XXX)`（比如：`getCompilationHook(compilation)`）方法来添加通用钩子。内部的类使用同样的机制来处理通用的钩子。
+## tapable升级
+为了webpack 3设置的兼容层被删除了。在webpack 4中也被废弃。部分不太常使用tapable api的被删除或废弃。  
+迁移：使用新的tabpable API
+## 分阶段的钩子
+在封装过程的几个阶段，有各个不同的钩子来处理这些不同的阶段，例如`optimizeDependenciesBasic` `optimizeDependencies`和`optimizeDependenciesAdvanced`。为了使单个钩子能够使用`stage`选项，这些钩子已经被移除了。请查找`OptimizationStages`来获取更多的可选stage值。  
+迁移：请使用剩下的hook来替代，你可以添加`stage`选项。
+## Main/Chunk/ModuleTemplate 被废弃
+构建模板被重构了。MainTemplate/ChunkTemplate/ModuleTemplate已经被废弃，JavascriptModulesPlugin 现在负责js的模板化。  
+在重构之前，JS的输出被Main/ChunkTemplate控制，其他输出（比如WASM,CSS）被插件控制。看起来JS像是第一等公民，其他的输出是第二等公民。重构带来的变化是所有的输出都被他们各自的插件控制。  
+现在一人可以介入到模板生成的过程中。这些钩子现在在JavascriptModulesPlugin中，而不是Main/ChunkTemplate(现在插件也支持hooks了，我称其为附加钩子)   
+现在有一个兼容层，所以Main/Chunk/ModuleTemplate依然存在，但只能将tap调用委托给新的钩子位置。  
+迁移：遵循弃用消息中的建议。主要指向不同位置的钩子。  
+## 入口描述符
+如果一个对象作为入口的值被传入，那么他可能是字符串，数组裹着一个描述符：
+```js
+module.exports = {
+  entry: {
+    catalog: {
+      import: './catalog.js',
+    }
+  }
+}
+```
+描述符语法将会传入额外的选项。
+### 入口输出文件名
+在默认情况下，入口chunk的输出文件名是从`output.filename`中提取的，但是你可以对某个特殊的入口指定一个输出文件名。
+```js
+module.exports = {
+  entry: {
+    about: { import: './about.js', filename: 'pages/[name][ext]' }
+  }
+};
+```
+### 入口依赖
+默认情况下，每一个入口chunk保存了它用到的所有模块，通过`dependOn` 选项，你可以在多个入口chunk键分享模块：
+```js
+module.exports = {
+  entry: {
+    app: { import: './app.js', dependOn: 'react-vendors' },
+    'react-vendors': ['react', 'react-dom', 'prop-types']
+  }
+};
+```
+app的chunk将不会包括`react-vendors`包含的模块
+### 入口库
+入口描述符允许针对每个入口传入不同的`library`选项
+```js
+module.exports = {
+  entry: {
+    commonjs: {
+      import: './lib.js',
+      library: {
+        type: 'commonjs-module'
+      }
+    },
+    amd: {
+      import: './lib.js',
+      library: {
+        type: 'amd'
+      }
+    }
+  }
+};
+```
+### 入口运行时
+入口描述符允许针对每个入口指定`runtime`。指定时，将创建一个具有此名称的块，该块仅包含项的运行时代码。当多个入口指定了同样的`runtime`,这些入口的chunk都会包含同样的运行时。这意味着他们能够使用同一个html页面。  
+```js
+module.exports = {
+  entry: {
+    app: {
+      import: './app.js',
+      runtime: 'app-runtime'
+    }
+  }
+};
+```
+### 入口chunk加载
+入口描述符允许对每一个入口指定`chunkLoading`.运行时的入口将会指定的方法使用这个来加载chunk.  
+```js
+module.exports = {
+  entry: {
+    app: {
+      import: './app.js'
+    },
+    worker: {
+      import: './worker.js',
+      chunkLoading: 'importScripts'
+    }
+  }
+};
+```
+## 顺序和ID
+webpack过去在编译过程中会对modules和chunk进行排序，具体来说，指定一个增序的id。现在这个机制被废弃了。顺序将不会被用来作为id生成的机制，id的控制逻辑将全部交给插件。  
+优化模块module和chunk排序的hooks被移除了。  
+迁移：你在也不能在编译阶段依赖module和chunk的顺序了。
+## 数组到集合
+* Compilation.modules现在是一个集合(Set)
+* Compilation.chunks现在是一个集合
+* Chunk.files现在是一个集合
+这里有兼容设计，目前会打印即将废弃warngin.  
