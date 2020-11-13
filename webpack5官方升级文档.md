@@ -618,3 +618,18 @@ webpack过去在编译过程中会对modules和chunk进行排序，具体来说�
 * Compilation.chunks现在是一个集合
 * Chunk.files现在是一个集合
 这里有兼容设计，目前会打印即将废弃warngin.  
+迁移：请使用集合的相关方法来替换数组相关方法
+## Compilation.fileSystemInfo
+这个新的类能用来以缓存的方式获取文件系统相关的信息。现在，他能够请求文件和目录的时间戳。如果可能的话，时间戳的相关信息是从watcher中得来的，否则的话讲过从文件系统中获取。  
+在未来，请求文件hash将会被添加，模块将能够通过文件内容而不是文件hash去检查文件的可用性。  
+迁移：请使用`file/contextTimestamps`来替换`compilation.fileSystemInfo`.  
+现在支持文件目录的时间戳，这使得上下文模块的序列化成为可能。  
+现在引入了`Compiler.modifiedFiles`，使得能够获得改变文件的引用，（下一步会实现`Compiler.removedFiles`）
+## 文件系统
+在`compiler.inputFileSystem`和`compiler.outputFileSystem`之后，这里有一个新的`compiler.intermediateFileSystem`能够针对所有不被看做是输入或输出文件系统操作，比如写记录，缓存或者分析输出。  
+文件系统现在有`fs`实例了，并且不再需要额外的方法，比如`join`或者`mkdirp`.但如果他们有类似于`join`和`dirname`的方法，则去使用。  
+## 热更新模块替换
+HMR 运行时现在已经被重构为运行时modules.`HotUpdateChunkTemplate`已经被合并到`ChunkTemplate`中。ChunkTemplates和插件现在需要控制`HotUpdateChunk`了。  
+javascript部分的HMR运行时已经从核心的HMR运行时中分离开。其他的模块类型也能够以他们各自的方式来控制HMR.在未来，为了mini-css-extract-plugin和WASM的HMR将成为可能。  
+迁移：因为这个一个新引入的特性，这里不需要迁移。  
+`import.meta.webpackHot`和`module.hot`暴露了一样的API
