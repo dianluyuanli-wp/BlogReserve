@@ -632,4 +632,18 @@ webpack过去在编译过程中会对modules和chunk进行排序，具体来说�
 HMR 运行时现在已经被重构为运行时modules.`HotUpdateChunkTemplate`已经被合并到`ChunkTemplate`中。ChunkTemplates和插件现在需要控制`HotUpdateChunk`了。  
 javascript部分的HMR运行时已经从核心的HMR运行时中分离开。其他的模块类型也能够以他们各自的方式来控制HMR.在未来，为了mini-css-extract-plugin和WASM的HMR将成为可能。  
 迁移：因为这个一个新引入的特性，这里不需要迁移。  
-`import.meta.webpackHot`和`module.hot`暴露了一样的API
+`import.meta.webpackHot`和`module.hot`暴露了一样的API.这对严格模式下的ESM modules(.mjs,package.json中的'module',他们无法访问`module`)也是适用的.
+## 工作队列
+webpack过去通过函数调用函数来控制模块进程，这里还有一个`semaphore`来控制进程并行数。`Compilation.semaphore`现在被移除，现在通过一个异步的丢了来控制工作队列和进程，每一步都有一个分开的队列：  
+* `Compilation.factorizeQueue`调用模块工厂函数来处理一组依赖
+* `Compilation.addModuleQueue` 调价模块到编译队列（可能会从缓存中复原存储模块）
+* `Compilation.buildQueue` 在需要的时候构建模块（可能会从缓存中复原模块）
+* `Compilation.rebuildQueue` 如果手动出发的话，会再次构建模块
+* `Compilation.processDependenciesQueue` 处理模块的依赖项
+这些队列都是有一些钩子来观察或者监听任务的进度。  
+在未来，多个编译器可能会同时工作，任务的协同可能通过监听这些队列来实现。  
+迁移：因为这是一个新引入的功能，目前不需要迁移
+## 日志上报
+webpack内部现在有一些日志上报。`stats.logging`和`infrastructureLogging`选项能够用来开启日志信息。
+## 模块和chunk图
+webpack过去会存储依赖中已经解析的模块，存储已经包含在chunk中的模块。
