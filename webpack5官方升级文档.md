@@ -646,4 +646,28 @@ webpack过去通过函数调用函数来控制模块进程，这里还有一个`
 ## 日志上报
 webpack内部现在有一些日志上报。`stats.logging`和`infrastructureLogging`选项能够用来开启日志信息。
 ## 模块和chunk图
-webpack过去会存储依赖中已经解析的模块，存储已经包含在chunk中的模块。
+webpack过去会存储依赖中已经解析的模块，存储已经包含在chunk中的模块。现在不会这样了，所有关于模块是如何被连接到模块图中的信息现在存储在ModuleGraph类中。还有关于模块是如何连接到chunks中的信息现在被存储在ChunkGraph类中。以来的相关信息（例如chunk图）也被存储在相关的类中。  
+这意味着下面这些关于模块的信息可以被移除：  
+* Module connections -> ModuleGraph
+* Module issuer -> ModuleGraph
+* Module optimization bailout -> ModuleGraph(todo: 检查是否需要用ChunkGraph来替换)
+* Module usedExports -> ModuleGraph
+* Module providedExports -> ModuleGraph
+* Module pre order index -> ModuleGraph
+* Module post order index -> ModuleGraph
+* Module depth -> ModuleGraph
+* Module profile -> ModuleGraph
+* Module id -> ChunkGraph
+* Module hash -> ChunkGraph
+* Module runtime requirements -> ChunkGraph
+* Module is in chunk -> ChunkGraph
+* Module is runtime module in chunk -> ChunkGraph
+* Chunk runtime requirement -> ChunkGraph
+wepack过去会在从缓存中恢复modules的时候断掉模块和graph的链接。现在不再必要了。模块不存储有关图的信息，因为技术上可以在多个图中使用复用相关信息。这更加方便缓存。  
+对于绝大多数的改动，这里有兼容层，在使用的时候会打印api废弃的信息。  
+迁移：使用ModuleGraph和ChunkGraph中的新api
+## 初始碎片化
+`DependenciesBlockVariables`已被移除，取而代之的是initFragments.  
+`DependencyTemplates`现在可以通过添加`initFragments`将代码注入到模块源的顶层，`InitFragments`允许复写。  
+迁移：使用`InitFragments`，而不是在源码中插入负索引。  
+## 模块的源类型
