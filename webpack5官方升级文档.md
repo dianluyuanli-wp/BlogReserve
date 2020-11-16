@@ -671,3 +671,20 @@ wepack过去会在从缓存中恢复modules的时候断掉模块和graph的链�
 `DependencyTemplates`现在可以通过添加`initFragments`将代码注入到模块源的顶层，`InitFragments`允许复写。  
 迁移：使用`InitFragments`，而不是在源码中插入负索引。  
 ## 模块的源类型
+模块现在必须通过`Module.getSourceTypes()`定义是什么类型的源是支持的.根据这个机制，不同的插件通过不同的类型来调用`source()`。例如，对于源类型`javascript`,`JavascriptModulesPlugin`将源码嵌入到打包文件中。源码类型`webassembly`将会使得`WebAssemblyModulesPlugin`输出一个wasm文件。常见的源码类型都是支持的，例如`mini-css-extract-plugin`将会用来支持`stylesheet`,将源码插入到css文件中。  
+模块类型和源码类型之间没有必然联系。例如模块类型`json`可以使用`javascritp`类型，模块类型`webassembly/experimental`可以使用源码类型`javascript`和`webassembly`.  
+迁移：常用的模块需要去实现这些新的接口方法。
+## Stats相关插件
+Stats`preset`,`default`,`json`和`toString`现在刚出现在在插件系统中（译者注：此处翻译不大确定）。将当前的Stats转换为插件。  
+迁移：并不需要完全替换状态函数，你可以兼容它。额外的信息能够添加到stats json中，而不是写一个单独的文件。
+## 新的watching
+webpack的观察者被重构了。先前使用`chokidar`和原生的`fsevents`依赖（只在macOS）.现在只依赖原生的Node.js`fs`。这意味着在webpack没有原生依赖了。  
+在watching的时候还会捕获文件系统的信息。webpack现在也会捕获mtimes,同时监视事件的次数。由此，`WatchFileSystem`API有些许调整。因为我们把Array转换为集合，把对象转换为Map。   
+## 在emit之后SizeOnlySource 
+webpack现在会将`Compilation.assets`中的源替换为`SizeOnlySource`的变体，以便减少内存的使用。  
+## 多次发送assets
+警告`Multiple assets emit different content to the same filename`现在会成为一个error.
+## 导出信息
+模块导出信息的存储方式在新版本中进行了重构。ModuleGrap现在在`module`中都有一个`ExportsInfo`,每一个输出都会储存对应的信息。如果模块在使用过程中有副作用，webpack会存储位置导出的信息。  
+针对每一个导出，如下的信息会被储存：
+* 
