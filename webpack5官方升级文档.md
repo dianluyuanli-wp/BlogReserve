@@ -687,4 +687,17 @@ webpack现在会将`Compilation.assets`中的源替换为`SizeOnlySource`的变�
 ## 导出信息
 模块导出信息的存储方式在新版本中进行了重构。ModuleGrap现在在`module`中都有一个`ExportsInfo`,每一个输出都会储存对应的信息。如果模块在使用过程中有副作用，webpack会存储位置导出的信息。  
 针对每一个导出，如下的信息会被储存：
-* 
+* 这个导出是否被使用？是，否，不是静态值，不确定（请参考`optimization.usedExports`）
+* 导出被提供了吗？是，否，不是静态值，不确定（请参考`optimization.providedExports`）
+* 导出可以被命名或者重命名吗？是，否，或者不确定。
+* 新的名字，导出的名字是否被重命名(详见`optimization.mangleExports`)
+* 嵌套的导出信息，如果导出是一个包含自身信息的对象
+  * 用来再次导出命名对象:`import * as X from "..."; export { X }`
+  * 用来表现JSON modules中的结构。
+## 代码生成阶段
+现在编译过程将代码生成看做分来的编译阶段。这部分不再在`Module.source()`和`Module.getRuntimeRequirements()`背后执行了。  
+这样使得整个工作流更加清晰。现在在编译过程中上报进度成为可能，代码生成的过程在分析时更加可视化。  
+迁移：`Module.source()`和`Module.getRuntimeRequirements()`被废弃。请使用`Module.codeGeneration()`来替换。
+## 依赖引用
+webpack过去使用单一方法和类型来表现依赖的应用（`Compilation.getDependecyReference`）。此类型过去用于包含有关此引用的所有信息，例如已导入导出的引用模块（如果它是弱引用）以及一些与排序相关的信息。  
+将所有的信息打包在一起使得引用依赖代价昂贵，这个也会被经常调用（每次调用可能有人会需要其中的部分信息）  
