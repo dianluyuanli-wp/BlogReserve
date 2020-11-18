@@ -701,3 +701,54 @@ webpack现在会将`Compilation.assets`中的源替换为`SizeOnlySource`的变�
 ## 依赖引用
 webpack过去使用单一方法和类型来表现依赖的应用（`Compilation.getDependecyReference`）。此类型过去用于包含有关此引用的所有信息，例如已导入导出的引用模块（如果它是弱引用）以及一些与排序相关的信息。  
 将所有的信息打包在一起使得引用依赖代价昂贵，这个也会被经常调用（每次调用可能有人会需要其中的部分信息）  
+在webpack 5中，这一部分的代码被重构了，部分方法被分离出来。  
+* `Compilation.factorizeQueue`为一系列的依赖调用模块工厂函数
+* `Compilation.addModuleQueue`将一个模块添加到编译队列中（有可能从缓存中恢复）
+* `Compilation.buildQueue`在必要的时候构建模块（可能将模块存储到缓存）
+* `Compilation.rebuildQueue`如果手动触发的话会再次构建的模块
+* `Compilation.processDependenciesQueue` 处理模块的依赖
+这些队列都有钩子来实现观察和监视进程。  
+在未来，多个编译器可能会一起工作，这些多进程的协作能够通过队列的拦截来实现。  
+迁移：因为这是一个新引入的功能，没有什么需要迁移。
+## logging
+webpack内部包括了多个logg逻辑。`stats.logging`和`infrastructureLogging`选项能够控制这些log的开启。
+## module和chunk图
+webpack过去会存储已经解析的模块在依赖中，存储已经包含的模块都chunk中。现在不会这样了。所有关于模块的信息都被连接到模块图中。所以他们永远不用引用模块或者影响输入输出。  
+这些依赖处理起来更方便，webpack会尽可能的使用他们。  
+## 废弃的loaders
+* null-loader
+  这个将会被废弃，使用
+  ```js
+  module.exports = {
+    resolve: {
+      alias: {
+        xyz$: false
+      }
+    }
+  };
+  ```
+  或者使用绝对路径
+  ```js
+  module.exports = {
+    resolve: {
+      alias: {
+        [path.resolve(__dirname, '....')]: false
+      }
+    }
+  };
+  ```
+# 小改动
+* `Compiler.name`:当用绝对庐江来产生一个编译器名字的时候，确保使用`|`或者`!`来分隔名字
+  * 使用空格来作为分隔符的方法被废弃了（路径可以包含空格了）
+  * Hint: 在Stats字符串输出中，`|`被空格替换
+* `SystemPlugin` 现在默认关闭
+  * 迁移：避免使用它，因为规范已经被移除，你可以通过设置`Rule.parser.system:true`重新启用
+* `ModuleConcatenationPlugin`:由于DependencyVariables已被删除，因此不再阻止连接
+  * 这意味着现在可以在`module`,`global`,`process`或者其他提供的插件中进行联结（concatenate）
+* `Stats.presetToOptions`被移除
+  * 迁移：使用`compilation.createStatsOptions`来进行替代
+* `SingleEntryPlugin`和`SingleEntryDependency`被移除
+  * 迁移：使用`EntryPlugin`和`EntryDependency`
+* Chunk现在可以有多个入口modules
+* `ExtendedAPIPlugin`被移除
+  * 
