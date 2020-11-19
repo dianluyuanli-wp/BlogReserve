@@ -751,4 +751,5 @@ webpack过去会存储已经解析的模块在依赖中，存储已经包含的�
   * 迁移：使用`EntryPlugin`和`EntryDependency`
 * Chunk现在可以有多个入口modules
 * `ExtendedAPIPlugin`被移除
-  * 
+  * 迁移：不在需要了，`__webpack_hash__`和`__webpack_chunkname__`能够保证运行时代码在需要的地方被注入
+* `ProgressPlugin`
