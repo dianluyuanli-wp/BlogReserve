@@ -752,4 +752,30 @@ webpack过去会存储已经解析的模块在依赖中，存储已经包含的�
 * Chunk现在可以有多个入口modules
 * `ExtendedAPIPlugin`被移除
   * 迁移：不在需要了，`__webpack_hash__`和`__webpack_chunkname__`能够保证运行时代码在需要的地方被注入
-* `ProgressPlugin`
+* `ProgressPlugin` 不再使用tapable上下文来`reportProgress`
+  * 迁移：使用`ProgressPlugin.getReporter(compiler)`来替代
+* `ProvidePlugin` 因为`.mjs`文件，现在重新可用了
+* `Stats`json`errors`和`warnings`不再包括字符串但是带有信息的对象将会被分裂成多个属性。
+  * 迁移：通过属性来获取信息,比如`message`
+* `Compilation.hooks.normalModuleLoader`被废弃
+  * 迁移：使用`NormalModule.getCompilationHooks(compilation).loader`来替代
+* `NormalModuleFactory`中的钩子有调整，从waterfall改到bailing,改变和重命名钩子将返回waterfall函数
+* 移除`compilationParams.compilationDependencies`
+  * 插件将通过`compilation.file/context/missingDependencies`在编译过程中添加依赖。
+  * 兼容层将会把`compilationDependencies.add`代理到`fileDependencies.add`
+* `stats.assetsByChunkName[x]`现在总是一个数组
+* 新增`__webpack_get_script_filename__`以便获得脚本文件的名字
+* package.json中的`sideEffects`将会被`glob-to-regex`来控制，而不是`micromatch`
+  * 这样有可能会改变一些边缘情况下的语义
+* `checkContext`被从`IgnorePlugin`中移除
+* 新的`__webpack_exports_info__ `api允许对导出的使用情况进行自省（introspection）
+* `SourceMapDevToolPlugin`现在也作用于非chunk的asset了
+* 从schema中移除了`serve`属性
+# 其他小改动
+* 移除内建目录，使用运行时模块来替换
+* 移除掉废弃的特性
+  * BannerPlugin现在只支持一个参数，这个参数可以为对象，字符串或者函数
+* 移除`CachePlugin`
+* `ChunkentryModule`被废弃，使用ChunkGraph来替代
+* `Chunk.hasEntryModule`被废弃了
+* `Chunk.addModule`被废弃了
