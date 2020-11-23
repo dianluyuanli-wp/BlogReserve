@@ -779,3 +779,12 @@ webpack过去会存储已经解析的模块在依赖中，存储已经包含的�
 * `ChunkentryModule`被废弃，使用ChunkGraph来替代
 * `Chunk.hasEntryModule`被废弃了
 * `Chunk.addModule`被废弃了
+* `Chunk.removeModule`被废弃
+* `Chunk.getNumberOfModules`被废弃
+* `Chunk.modulesIterable`被废弃
+* `Chunk.compareTo`被废弃
+* `Chunk.containsModule`被废弃
+* `Chunk.getModules`被废弃
+* `Chunk.remove`被废弃
+* `Chunk.moveModule`被废弃
+* `Chunk.integrate`被废弃
