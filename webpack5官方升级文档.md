@@ -788,3 +788,11 @@ webpack过去会存储已经解析的模块在依赖中，存储已经包含的�
 * `Chunk.remove`被废弃
 * `Chunk.moveModule`被废弃
 * `Chunk.integrate`被废弃
+* `Chunk.canBeIntegrated`被废弃
+* `Chunk.isEmpty`被废弃
+* `Chunk.modulesSize`被废弃
+* `Chunk.size`被废弃
+* `Chunk.integratedSize`被废弃
+* `Chunk.getChunkModuleMaps`被废弃
+* `Chunk.hasMduleInGraph`被废弃
+* `Chunk.updateHash`签名被废弃
