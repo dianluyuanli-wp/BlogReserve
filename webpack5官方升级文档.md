@@ -795,4 +795,35 @@ webpack过去会存储已经解析的模块在依赖中，存储已经包含的�
 * `Chunk.integratedSize`被废弃
 * `Chunk.getChunkModuleMaps`被废弃
 * `Chunk.hasMduleInGraph`被废弃
-* `Chunk.updateHash`签名被废弃
+* `Chunk.updateHash`信号变更
+* `Chunk.getChildIdsByOrders`信号变更（TODO:考虑迁移到`ChunkGraph`）
+* `Chunk.getChildIdsByOrdersMap`信号变更（TODO:考虑迁移到`ChunkGraph`）
+* `Chunk.getChunkModuleMaps`被移除
+* `Chunk.setModules`被移除
+* 过去被废弃的chunk方法被移除
+* 新增`ChunkGraph`
+* `ChunkGroup.setParents`被移除
+* `ChunkGroup.containsModule`被移除
+* `ChunkGroup.remove`不再断开与块中的group的链接
+* `ChunkGroup.compareTo`信号变更
+* `ChunkGroup.getChildrenByOrders`信号变更
+* `ChunkGroup`index 和index(怀疑是笔误，译者注)被重命名为前序或者后序
+  * 老的getter被废弃
+* `ChunkTemplate.hooks.modules`信号改变
+* `ChunkTemplate.hooks.render`信号改变
+* `ChunkTemplate.updateHashForChunk`信号改变
+* `Compilation.hooks.optimizeChunkOrder`已移除
+* `Compilation.hooks.optimizeModuleOrder`已移除
+* `Compilation.hooks.advancedOptimizeModuleOrder`已移除
+* `Compilation.hooks.optimizeDependenciesBasic`已移除
+* `Compilation.hooks.optimizeDependenciesAdvanced`已移除
+* `Compilation.hooks.optimizeModulesBasic`已移除
+* `Compilation.hooks.optimizeModulesAdvanced`已移除
+* `Compilation.hooks.optimizeChunksBasic`已移除
+* `Compilation.hooks.optimizeChunksAdvanced`已移除
+* `Compilation.hooks.optimizeChunkModulesBasic`已移除
+* `Compilation.hooks.optimizeChunkModulesAdvanced`已移除
+* `Compilation.hooks.optimizeExtractedChunksBasic`已移除
+* `Compilation.hooks.optimizeExtractedChunks`已移除
+* `Compilation.hooks.optimizeExtractedChunksAdvanced`已移除
+* `Compilation.hooks.afterOptimizeExtractedChunks`已移除
