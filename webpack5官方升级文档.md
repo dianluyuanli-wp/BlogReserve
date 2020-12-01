@@ -827,3 +827,108 @@ webpack过去会存储已经解析的模块在依赖中，存储已经包含的�
 * `Compilation.hooks.optimizeExtractedChunks`已移除
 * `Compilation.hooks.optimizeExtractedChunksAdvanced`已移除
 * `Compilation.hooks.afterOptimizeExtractedChunks`已移除
+* 新增`Compilation.hooks.stillValidModule`
+* 新增`Compilation.hooks.statsPreset`
+* 新增`Compilation.hooks.statsNormalize`
+* 新增`Compilation.hooks.statsFactory`
+* 新增`Compilation.hooks.statsPrinter`
+* `Compilation.fileDependencies`,`Compilation.contextDependencies`和`Compilation.missingDependencies`现在是懒设置的
+* `Compilation.entries`被移除
+  * 迁移：使用`Compilation.entryDependencies`来替换
+* `Compilation._preparedEntrypoints`被移除
+* `dependencyTemplates`现在是一个`DependencyTemplates`的类，而不是一个简单的`Map`
+* `Compilation.fileTimestamps`和`contextTimestamps`被移除
+  * 迁移：使用`Compilation.fileSystemInfo`来替代
+* `Compilation.waitForBuildingFinished`被移除
+  * 迁移：使用新的队列
+* `Compilation.addModuleDependencies`被移除
+* `Compilation.prefetch`被移除
+* `Compilation.hooks.beforeHash`现在在模块的hash被创建之后将会调用
+  * 迁移：使用`Compiliation.hooks.beforeModuleHash`来替代
+* `Compilation.applyModuleIds`被移除
+* `Compilation.applyChunkIds`被移除
+* 新增`Compiler.root`，它会指向跟编译器
+  * 它将会被用来在webpackMaps中缓存数据，而不是静态限定范围
+* 新增`Compiler.hooks.afterDone`
+* `Source.emitted`不在通过编译器设置
+  * 迁移：请查看`Compilation.emittedAssets`
+* 新增`Compiler/Compilation.compilerPath`,这是编译器在编译器树中的独一无二的名字（与根编译器的域不同）
+* `Module.needRebuild`被废弃
+  * 迁移： 使用`Module.needBuild`来替代
+* `Dependency.getReference`签名变化
+* `Dependency.getExports`签名变化
+* `Dependency.getWarnings`签名变化
+* `Dependency.getErrors`签名变化
+* `Dependency.updateHash`签名变化
+* `Dependency.module`被移除
+* 现在`DependencyTemplate`有一个基类
+* `MultiEntryDependency`被移除
+* 新增`EntryDependency`
+* `EntryModuleNotFoundError`被移除
+* `SingleEntryPlugin`被移除
+* 新增`EntryPlugin`
+* 新增`Generator.getTypes`
+* 新增`Generator.getSize`
+* `Generator.generate`签名变更
+* 新增`HotModuleReplacementPlugin.getParserHooks`
+* `Parser`被移动到`JavascriptParser`中
+* `ParserHelpers`被移动到`JavascriptParserHelpers`
+* `MainTemplate.hooks.moduleObj`被移除
+* `MainTemplate.hooks.currentHash`被移除
+* `MainTemplate.hooks.addModule`被移除
+* `MainTemplate.hooks.requireEnsure`被移除
+* `MainTemplate.hooks.globalHashPaths`被移除
+* `MainTemplate.hooks.globalHash`被移除
+* `MainTemplate.hooks.hotBootstrap`被移除
+* `MainTemplate.hooks`部分签名变更
+* `Module.hash`被废弃
+* `Module.renderedHash`被废弃
+* `Module.reasons`被移除
+* `Module.id`被废弃
+* `Module.index`被废弃
+* `Module.index2`被废弃
+* `Module.depth`被废弃
+* `Module.issuer`被废弃
+* `Module.profile`被移除
+* `Module.prefetched`被移除
+* `Module.built`被移除
+* `Module.used`被移除
+  * 迁移：使用`Module.getUsedExports`来替代
+* `Module.optimizationBailout`被废弃
+* `Module.exportsArgument`被移除
+* `Module.optional`被废弃
+* `Module.disconnect`被移除
+* `Module.unseal`被移除
+* `Module.setChunks`被移除
+* `Module.addChunk`被废弃
+* `Module.removeChunk`被废弃
+* `Module.isInChunk`被废弃
+* `Module.isEntryModule`被废弃
+* `Module.getChunks`被废弃
+* `Module.getNumberOfChunks`被废弃
+* `Module.chunksIterable`被废弃
+* `Module.hasEqualsChunks`被移除
+* `Module.useSourceMap`被移动到`NormalModule`
+* `Module.addReason`被移除
+* `Module.removeReason`被移除
+* `Module.rewriteChunkInReasons`被移除
+* `Module.isUsed`被移除
+  * 迁移：使用`isModuleUsed`,`isExportUsed`和`getUsedName`来替代
+* `Module.updateHash`签名变更
+* `Module.sortItems`被移除
+* `Module.unbuild`被移除
+  * 迁移：使用`invalidateBuild`来替代
+* 新增`Module.getSourceTypes`
+* 新增`Module.getRuntimeRequirements` 
+* `Module.size`签名变更
+* `ModuleFilenameHelpers.createFilename`签名变更
+* `ModuleProfile`类新增更多数据
+* `ModuleReason`被移除
+* `ModuleTemplate.hooks`签名变更
+* `ModuleTemplate.render`签名变更
+* `Compiler.dependencies`被移除
+  * 迁移：使用`MultiCompiler.setDependencies`来替代
+* `MultiModule`被移除
+* `MultiModuleFactory`被移除
+* `NormalModuleFactory.fileDependencies`,`NormalModuleFactory.contextDependencies`和`NormalModuleFactory.missingDependencies`现在是懒设置的
+* `RuntimeTemplate`方法现在获取`runtimeRequirements`的参数
