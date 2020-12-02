@@ -932,3 +932,55 @@ webpack过去会存储已经解析的模块在依赖中，存储已经包含的�
 * `MultiModuleFactory`被移除
 * `NormalModuleFactory.fileDependencies`,`NormalModuleFactory.contextDependencies`和`NormalModuleFactory.missingDependencies`现在是懒设置的
 * `RuntimeTemplate`方法现在获取`runtimeRequirements`的参数
+* `serve`这个属性被移除
+* `Stats.jsonToString`被移除
+* `Stats.filterWarnings`被移除
+* `Stats.getChildOptions`被移除
+* `Stats`helper方法被移除
+* `Stats.toJson`签名改变（第二个参数被移除）
+* `ExternalModule.external`被移除
+* `HarmonyInitDependency`被移除
+* `Dependency.getInitFragments`被废弃
+  * 迁移：使用`apply`,`initFragements`来替代
+* 依赖引用现在将一个函数传给module而不是一个Module
+* `HarmonyImportSpecifierDependency.redirectedId`被移除
+  * 迁移：使用`setId`来替代
+* acorn从 5 升级到 8
+* 测试
+  * 热测试用例现在会作用于多个对象`async-node`,`node`,`web`,`webworker`
+  * 测试用例现在会对标记为`store: "instant"`或`store: "pack"`文件系统缓存运行
+  * 测试用例现在会作用于确定的模块id
+* 新添加工具以便给imports排序（请在CI中查阅）
+* 当chunk名等于chunk id的时候，运行时的Chunk名字映射将不会包含入口
+* stats的原因新增`resolvedModuleId`,`resolvedModuleIdentifier`和`resolvedModule`属性来指向优化前（比如作用域提升）的module
+* 在Stats的toString输出中展示`resolvedModule`
+* loader-runner升级[https://github.com/webpack/loader-runner/releases/tag/v3.0.0](https://github.com/webpack/loader-runner/releases/tag/v3.0.0)
+* 出于性能考虑，`Compilation`中的`file/context/missingDependencies`将不再排序
+  * 不要依赖顺序
+* webpack-sources升级到v2版本[https://github.com/webpack/webpack-sources/releases/tag/v2.0.1](https://github.com/webpack/webpack-sources/releases/tag/v2.0.1)
+* 对webpack-command的支持被移除
+* 使用schema-utils@2对schema进行验证
+* `Compiler.assetEmitted`的第二个参数可以携带更新信息
+* BannerPlugin会删除掉多余的空格
+* 移除掉`LimitChunkCountPlugin`中的`minChunkSize`
+* 将javascript相关文件重新组织到子目录中
+  * `webpack.JavascriptModulesPlugin` -> `webpack.javascript.JavascriptModulesPlugin`
+* 新增Logger.getChildLogger
+* DllPlugin中的entryOnly默认设置为true
+* 删除特殊请求缩短逻辑，并为可读的模块名称使用单个相对路径
+* 允许SourceMap中的webpack://urls,以便给webpack的根上下文提供相对路径
+* 添加API以生成和处理针对Web包配置的CLI参数
+* 当使用System.js作为libaryTarget的时候，新增`__system_context__`来作为System.js的上下文
+* 新增对DefinePlugin的bigint支持
+* 新增对基础功能（比如Math）的bigint支持
+* 删除创建哈希后修改编译哈希的能力
+* 移除HotModuleReplacementPlugin中的multiStep模式
+* 当潜逃的对象和数字被使用的时候，`emitAsset`中的`assetInfo`将会合并
+* 当基于`filename`的路径(比如saaets)时，`[query]`现在是一个可用的占位符
+* 新增`Compilation.deleteAsset`来正确地删除一个assets和没有共享的相关assets
+* 将`require("webpack-sources")`暴露为`require("webpack").sources`
+* 使用terser 5压缩代码
+* Webpack用在句首的时候，首字母可以大写为W
+
+# 参考文档
+[webpack 5 发布官方文档](https://webpack.js.org/blog/2020-10-10-webpack-5-release)
