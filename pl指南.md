@@ -4,6 +4,7 @@
  * protype原型上挂then，根据状态来执行回调
  * 为了实现异步，通过两个数组sucList和errList来存放回调，resolve后再执行，then的时候只是执行push
  * 需要实现链式调用 操作
+ * 每一步操作都要try catch, then方法要有兜底的入参
 react 原理
 
 # Loader
@@ -149,6 +150,7 @@ http://eux.baidu.com//blog/fe/%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8F%E6%9
 
 项目优化
 webpack打包，loader原理，babel原理
+webpack原理
 
 梳理项目
 
@@ -169,4 +171,5 @@ https://www.jianshu.com/p/8af1bd7308ab
 技术栈
 https://www.jianshu.com/p/dfefa9d7ab55
 
-手写深拷贝，防抖、截流
+手写深拷贝，防抖、截流，bind,call,apply, await async
+函数科里化
