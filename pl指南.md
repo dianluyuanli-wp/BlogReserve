@@ -1,3 +1,26 @@
+核心点：
+* react,webpack,node
+* 项目经验，项目内容
+* 个人项目
+
+# 个人项目
+## 小程序
+支撑mdd首页和部分原生页面，方便mc captain进行订单管理和参与推广活动和进行门店运营,核心是小程序，状态管理使用自研框架,页面维度的store
+
+首页改版，更多的露出，更多的版块，拆分两个loop
+三个技术方案：
+纯原生switchTab（原生底部tab，有二跳页面无法传参,官方会提前渲染两个page）
+两个页面，底部自己画tab（使用navigateTo进行跳转 首次要重新渲染，体验不佳）
+同一个页面分两块，隐藏一部分（体验流畅，但是首页比较臃肿）
+
+## 综合商品列表
+原来问题：
+通用商品列表杂糅多种样式，多种功能，运营只想使用一个组价来搭建页面，随着功能迭代，这个组件过于膨胀，来接口侧，数据侧和渲染侧，各种ifelse逻辑，维护成本越来越高
+组件过多，业务逻辑过于庞杂
+
+解决方案
+通过装饰器，在组价的各个关键生命周期，注入对应的业务逻辑，在最外围添加功能判断模块，确认在后续的流程中需要跑那些逻辑，将各个功能模块的专属逻辑抽出到各自的文件中，方便维护
+
 浏览器事件循环
 # 手写promise  
  * 有个变量存贮三种状态，有个excutor来立即执行函数，res和rej我们直接来提他们实现  
@@ -149,12 +172,32 @@ http://eux.baidu.com//blog/fe/%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8F%E6%9
 浏览器宏任务
 
 项目优化
+webpack原理
+https://juejin.cn/post/6844903957769224206#heading-0
+1、内部有installedModule来缓存对象，如果已经编译过直接返回
+2、通过__webpack__require__内部递归调用，文件路径作为moduleId
+3、生成的打包是一个立即执行函数，入参是entry文件，eval
+
+获取到index.js的文件内容之后，并不能直接使用，需要通过将其解析成抽象语法树进行处理，需要使用一个插件@babel/parser将模块代码解析成AST，然后插件@babel/traverse配合着使用，将AST的节点进行替换，替换完成之后，使用插件@babel/generator将AST转换成模块的原有代码，改变的只是将require变成__webpack_require__，需要注意的是需要将路径处理一下，因为此时的路径是相对于src下面的。处理完index之后需要递归调用处理全部的模块，并声称bundle中自执行函数的参数modules
+
+https://imweb.io/topic/59324940b9b65af940bf58ae
+
 webpack打包，loader原理，babel原理
+
+plugin
+而至于 plugin 则是一些插件，这些插件可以将对编译结果的处理函数注册在 Webpack 的生命周期钩子上，在生成最终文件之前对编译的结果做一些处理。比如大多数场景下我们需要将生成的 JS 文件插入到 Html 文件中去。就需要使用到 html-webpack-plugin 这个插件，我们需要在配置中这样写。
+每一个 plugin Class 都必须实现一个 apply 方法，这个方法接收 compiler 实例，然后将真正的钩子函数挂载到 compiler.hook 的某一个声明周期上。
+
 webpack原理
 
 梳理项目
 
 梳理博客
+
+# 后端渲染
+
+# 原型链
+https://blog.csdn.net/cc18868876837/article/details/81211729?utm_medium=distribute.pc_relevant_t0.none-task-blog-BlogCommendFromMachineLearnPai2-1.nonecase&depth_1-utm_source=distribute.pc_relevant_t0.none-task-blog-BlogCommendFromMachineLearnPai2-1.nonecase
 
 # 面经：
 社招中级前端笔试面试题总结
@@ -166,6 +209,8 @@ https://juejin.cn/post/6844903928623038478
 字节面经
 https://www.nowcoder.com/discuss/580800?type=2&order=3&pos=22&page=1&channel=-1&source_id=discuss_tag_nctrack
 
+https://www.jianshu.com/p/cb6db0d708b7
+
 前端面试题
 https://www.jianshu.com/p/8af1bd7308ab
 技术栈
@@ -173,3 +218,17 @@ https://www.jianshu.com/p/dfefa9d7ab55
 
 手写深拷贝，防抖、截流，bind,call,apply, await async
 函数科里化
+https://juejin.cn/post/6844903645222273037
+
+柯里化，可以理解为提前接收部分参数，延迟执行，不立即输出结果，而是返回一个接受剩余参数的函数。因为这样的特性，也被称为部分计算函数。柯里化，是一个逐步接收参数的过程。在接下来的剖析中，你会深刻体会到这一点。
+
+反柯里化，是一个泛型化的过程。它使得被反柯里化的函数，可以接收更多参数。目的是创建一个更普适性的函数，可以被不同的对象使用。有鸠占鹊巢的效果。
+
+# 算法：
+二叉树的前中后序遍历、快排
+
+# css
+水平垂直居中
+https://juejin.cn/post/6844903510731915277
+
+盒模型，计算样式权重
