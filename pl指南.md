@@ -21,7 +21,17 @@
 解决方案
 通过装饰器，在组价的各个关键生命周期，注入对应的业务逻辑，在最外围添加功能判断模块，确认在后续的流程中需要跑那些逻辑，将各个功能模块的专属逻辑抽出到各自的文件中，方便维护
 
+# dart项目
+
 浏览器事件循环
+https://juejin.cn/post/6844903577052250119
+
+宏任务：js同步执行的代码块，setTimeout、setInterval、XMLHttprequest等。
+微任务：promise、process.nextTick（node环境）等。
+
+先执行一个宏任务，如果遇到其他宏任务，将其放入消息队列，如果有微任务，放入微任务队列
+当前宏任务执行完毕之后，执行所有微任务，比如promise的then
+微任务执行完毕后，消息队列出队，执行该任务
 # 手写promise  
  * 有个变量存贮三种状态，有个excutor来立即执行函数，res和rej我们直接来提他们实现  
  * protype原型上挂then，根据状态来执行回调
@@ -80,6 +90,11 @@ keep-alive双方并没有建立正真的连接会话，服务端可以在任何�
 
 # react 原理手写
 https://juejin.cn/post/6898292945867571207
+
+实现ReactDom.render()
+实现React.createElement();
+实现自定义组件渲染，即React.component,组件有render方法，这个方法返回dom数据结构，在用createElement创建真实dom,自定义组件自己会吊柜调用createUnit方法，直到最后创建原生标签
+生命周期实现
 
 # react hooks原理
 https://juejin.cn/post/6863642635916017671
@@ -166,17 +181,19 @@ http://eux.baidu.com//blog/fe/%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8F%E6%9
 
 也有编译模板和虚拟dom
 
+小程序性能优化
+
 
 浏览器插件
 后端渲染
 浏览器宏任务
 
 项目优化
-webpack原理
+# webpack原理
 https://juejin.cn/post/6844903957769224206#heading-0
 1、内部有installedModule来缓存对象，如果已经编译过直接返回
 2、通过__webpack__require__内部递归调用，文件路径作为moduleId
-3、生成的打包是一个立即执行函数，入参是entry文件，eval
+3、生成的打包是一个立即执行函数，入参是entry文件，eval里面是编译之后的文件内容
 
 获取到index.js的文件内容之后，并不能直接使用，需要通过将其解析成抽象语法树进行处理，需要使用一个插件@babel/parser将模块代码解析成AST，然后插件@babel/traverse配合着使用，将AST的节点进行替换，替换完成之后，使用插件@babel/generator将AST转换成模块的原有代码，改变的只是将require变成__webpack_require__，需要注意的是需要将路径处理一下，因为此时的路径是相对于src下面的。处理完index之后需要递归调用处理全部的模块，并声称bundle中自执行函数的参数modules
 
@@ -188,7 +205,16 @@ plugin
 而至于 plugin 则是一些插件，这些插件可以将对编译结果的处理函数注册在 Webpack 的生命周期钩子上，在生成最终文件之前对编译的结果做一些处理。比如大多数场景下我们需要将生成的 JS 文件插入到 Html 文件中去。就需要使用到 html-webpack-plugin 这个插件，我们需要在配置中这样写。
 每一个 plugin Class 都必须实现一个 apply 方法，这个方法接收 compiler 实例，然后将真正的钩子函数挂载到 compiler.hook 的某一个声明周期上。
 
-webpack原理
+# webpack优化
+https://juejin.cn/post/6844903895697735687
+1、tree shake 必须使用es6的module，否则无效，依赖es6的静态结构特性
+2、scope hoisting 作用域上提，模块合并
+3、通过mini-css-extract-plugin将css单独提取，支持异步加载
+4、SplitChunksPlugin
+5、@babel/plugin-syntax-dynamic-import 动态懒加载
+6、ignorePlugin moment删除冗余语言包
+7、dllPlugin 动态链接库
+8、 webpack-bundle-analyzer 方便分析
 
 梳理项目
 
@@ -198,6 +224,10 @@ webpack原理
 
 # 原型链
 https://blog.csdn.net/cc18868876837/article/details/81211729?utm_medium=distribute.pc_relevant_t0.none-task-blog-BlogCommendFromMachineLearnPai2-1.nonecase&depth_1-utm_source=distribute.pc_relevant_t0.none-task-blog-BlogCommendFromMachineLearnPai2-1.nonecase
+
+prototype函数才有，指向这个函数实例化对象都具有的属性
+对象 __protype__指向这个对象的原型,组成原型链的关键，沿着这个去查找属性
+constructor 指向每个对象的构造函数
 
 # 面经：
 社招中级前端笔试面试题总结
@@ -230,5 +260,37 @@ https://juejin.cn/post/6844903645222273037
 # css
 水平垂直居中
 https://juejin.cn/post/6844903510731915277
+margin: 0 auto
+如果知道本身的宽高，可以用负margin
+position: absolute;
+top: 50%;
+left: 50%
+magin-left: -50rpx;
+margin-top: -50rpx
+如果不知道宽高
+  transform: translate(-50%, -50%);
+
+或者flex
+容器属性：
+flex-direction
+flex-wrap
+flex-flow
+justify-content
+align-items
+align-content
+
+项目属性：
+order
+flex-grow
+flex-shrink
+flex-basis
+flex
+align-self
+
+或者
+position:absolute;
+top: 0;left:0;right:0;bottom:0;
+margin: auto;
+
 
 盒模型，计算样式权重
