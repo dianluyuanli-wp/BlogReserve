@@ -21,6 +21,10 @@
 解决方案
 通过装饰器，在组价的各个关键生命周期，注入对应的业务逻辑，在最外围添加功能判断模块，确认在后续的流程中需要跑那些逻辑，将各个功能模块的专属逻辑抽出到各自的文件中，方便维护
 
+多米诺整体解决方案
+## 装饰器写法
+https://blog.csdn.net/zl_best/article/details/94447018
+
 # dart项目
 
 浏览器事件循环
@@ -88,10 +92,12 @@ websocket的长连接，是一个真的全双工。长连接第一次tcp链路�
  
 keep-alive双方并没有建立正真的连接会话，服务端可以在任何一次请求完成后关闭。WebSocket 它本身就规定了是正真的、双工的长连接，两边都必须要维持住连接的状态。
 
+http 2.0 头部压缩 服务器推送 多路复用 二进制分帧
+
 # react 原理手写
 https://juejin.cn/post/6898292945867571207
 
-实现ReactDom.render()
+实现ReactDom.render() innerHtml
 实现React.createElement();
 实现自定义组件渲染，即React.component,组件有render方法，这个方法返回dom数据结构，在用createElement创建真实dom,自定义组件自己会吊柜调用createUnit方法，直到最后创建原生标签
 生命周期实现
@@ -117,8 +123,14 @@ https://juejin.cn/post/6844903856690724872
 深度优先遍历，打上唯一标记
 
 ## diff算法相关具体过程
+https://juejin.cn/post/6844903856690724872#heading-3
+1\Diff算法会对新旧两棵树做深度优先遍历，避免对两棵树做完全比较，因此算法复杂度可以达到O(n)。然后给每个节点生成一个唯一的标志：
+2、只对同一级别的元素进行比较
+不同类型，直接重建
+同类型，原生直接修改标签内容，react原生组件，实例不变，更新组件状态，调用willUpdate和render，递归处理
+新增，删除和移动
 
-
+key应该具有稳定性，
 # react Filber
 ## 策略
 所以 React 通过Fiber 架构，让自己的Reconcilation 过程变成可被中断。 '适时'地让出CPU执行权，除了可以让浏览器及时地响应用户的交互，还有其他好处:
@@ -151,7 +163,11 @@ componentWillUnmount
 双缓冲：work in progress和current
 
 # 渲染图手绘
-
+1、setState 插入更新队列，请求调度
+2、浏览器执行完后，时间片有剩余时间，执行任务
+3、是否有中断的任务，有的话执行，没有的话取新任务
+4、执行任务单元，还有时间的话继续取，否则让出
+5、任务是否执行完，是的话归还控制权，否则的话继续申请调度
 react原理 虚拟dom
 
 chrome插件
@@ -160,6 +176,9 @@ chrome插件
 # mobx原理
 原理博文
 https://juejin.cn/post/6844904202280402952
+
+阿里解释
+https://zhuanlan.zhihu.com/p/42150181
 
 简易实现
 https://zhuanlan.zhihu.com/p/26559530
