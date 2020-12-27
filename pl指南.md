@@ -21,11 +21,19 @@
 解决方案
 通过装饰器，在组价的各个关键生命周期，注入对应的业务逻辑，在最外围添加功能判断模块，确认在后续的流程中需要跑那些逻辑，将各个功能模块的专属逻辑抽出到各自的文件中，方便维护
 
-多米诺整体解决方案
+## 多米诺整体解决方案
+多米诺系统，营销页编辑与展示一体化平台，可视化，可交互，对运营友好，内容组件化，方便维护，业务逻辑以组件维度解耦。项目主体分为编辑页和展示页两部分，展示页支持运营直接新增或编辑组件，组建内部支持UI编辑与业务逻辑编辑（数据源，交互方式等），在编辑页面可实时预览当前的编辑效果，点击提交后，会将运营编辑的页面生成一个json文件，其内部包含了生成该页面所需的所有内容，将其提交给后端。
+
+展示侧通过后端渲染来直出页面，在node端提前获取页面json数据，渲染首屏组件（拉取组件各自接口），通过react的能力实现后端渲染，直出带有样式的html文件，通过isomorphic-style-loader来实现前后端渲染样式重构。
 ## 装饰器写法
 https://blog.csdn.net/zl_best/article/details/94447018
 
 # dart项目
+Flutter是谷歌的移动UI框架，可以快速在iOS和Android上构建高质量的原生用户界面。包含很多核心widget,可以在iso和安卓上达到原生应用一样的性能。Flutter的热重载可帮助您快速地进行测试、构建UI、添加功能并更快地修复错误。
+1、react-native，weekx核心是通过js开发，执行时需要js解释器，UI通过原生控件渲染。flutter既不使用webview，也不实用原生控件，使用自有引擎来绘制组件，使用本机指令集运行，不涉及解释器，可以达到和原生一样的性能。
+
+flutter问题：
+逻辑和UI强耦合，开发体验不友好，如果要对底层能力进行编程，还是需要了解原生的开发步骤，flutter只是抹平了UI层的区别
 
 浏览器事件循环
 https://juejin.cn/post/6844903577052250119
@@ -98,8 +106,12 @@ http 2.0 头部压缩 服务器推送 多路复用 二进制分帧
 https://juejin.cn/post/6898292945867571207
 
 实现ReactDom.render() innerHtml
-实现React.createElement();
-实现自定义组件渲染，即React.component,组件有render方法，这个方法返回dom数据结构，在用createElement创建真实dom,自定义组件自己会吊柜调用createUnit方法，直到最后创建原生标签
+实现React.createElement(type, props, children);
+内部有多个内容：事件绑定，style,class,children,其他属性
+实现自定义组件渲染，即React.component,组件有render方法，这个方法返回dom数据结构，在用createElement创建真实dom,自定义组件自己会递归调用createUnit方法，直到最后创建原生标签
+
+createUnit:原生 NativeUnit Component
+component内部new Compoent,调用render方法，返回内容继续递归调用CreateUnit,最终会返回原生标签
 生命周期实现
 
 # react hooks原理
@@ -247,6 +259,10 @@ https://blog.csdn.net/cc18868876837/article/details/81211729?utm_medium=distribu
 prototype函数才有，指向这个函数实例化对象都具有的属性
 对象 __protype__指向这个对象的原型,组成原型链的关键，沿着这个去查找属性
 constructor 指向每个对象的构造函数
+
+# babel相关
+它基于`acorn`和`acorn-jsx`
+babel/types babel/parser babel/transform bable/generator
 
 # 面经：
 社招中级前端笔试面试题总结
