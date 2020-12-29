@@ -289,7 +289,10 @@ https://www.jianshu.com/p/dfefa9d7ab55
 
 手写深拷贝，
 防抖、截流 https://juejin.cn/post/6844903752063778830
-bind,call,apply, await async
+bind,call,apply, 
+await async
+https://juejin.cn/post/6844904102053281806#heading-0
+核心是把async改写成generator，然后用一个asyncToGenerator来直线generator的自动执行
 函数科里化
 https://juejin.cn/post/6844903645222273037
 
@@ -299,6 +302,31 @@ https://juejin.cn/post/6844903645222273037
 
 # 浏览器缓存
 https://juejin.cn/post/6855469171703185416
+强缓存，协商缓存
+
+
+三级缓存原理 (访问缓存优先级)
+先在内存中查找,如果有,直接加载。
+如果内存中不存在,则在硬盘中查找,如果有直接加载。
+如果硬盘中也没有,那么就进行网络请求。
+请求获取的资源缓存到硬盘和内存。
+
+强缓存：
+expires 绝对时间
+
+Cache-Control（优先级高于Expires）
+no-cache：需要进行协商缓存，发送请求到服务器确认是否使用缓存。
+no-store：禁止使用缓存，每一次都要重新请求数据。
+public：可以被所有的用户缓存，包括终端用户和 CDN 等中间代理服务器。
+private：只能被终端用户的浏览器缓存，不允许 CDN 等中继缓存服务器对其缓存。
+Cache-Control 与 Expires 可以在服务端配置同时启用，同时启用的时候 Cache-Control 优先级高。
+
+Last-Modify/If-Modify-Since
+ETag/If-None-Match
+
+Last-Modified 与 ETag 是可以一起使用的，服务器会优先验证 ETag，一致的情况下，才会继续比对 Last-Modified，最后才决定是否返回 304。
+
+
 
 # 算法：
 二叉树的前中后序遍历、快排
