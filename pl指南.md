@@ -152,6 +152,7 @@ https://juejin.cn/post/6844903856690724872#heading-3
 key应该具有稳定性，
 # react Filber
 ## 策略
+类似于堆栈的数据结构
 所以 React 通过Fiber 架构，让自己的Reconcilation 过程变成可被中断。 '适时'地让出CPU执行权，除了可以让浏览器及时地响应用户的交互，还有其他好处:
 
 ## 好处
@@ -338,6 +339,31 @@ https://juejin.cn/post/6844904089713639431
 
 # 算法：
 二叉树的前中后序遍历、快排
+
+instance 和 instanceof
+https://juejin.cn/post/6844904081803182087#heading-4
+构造函数的原型是否在实例的原型链上
+
+从输入url，浏览器发生了什么
+https://juejin.cn/post/6844904054074654728
+DNS域名解析
+建立tcp链接
+发送http请求，服务器处理请求
+关闭tcp链接
+浏览器渲染
+  * 构建DOM树
+  * 样式计算
+  * 页面布局
+  * 生成分层树
+  * 栅格化
+  * 显示
+
+手写继承，
+https://www.jianshu.com/p/6925ed009f1e
+
+手写观察者模式
+204和304之间区别
+两个进程之间如何通信？子网掩码有什么作用？
 
 # css
 水平垂直居中
