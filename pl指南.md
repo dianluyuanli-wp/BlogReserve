@@ -30,6 +30,15 @@ antd+mobx
 展示侧通过后端渲染来直出页面，在node端提前获取页面json数据，渲染首屏组件（拉取组件各自接口），通过react的能力实现后端渲染，直出带有样式的html文件，通过isomorphic-style-loader来实现前后端渲染样式重构。
 
 流式渲染，后端渲染，打包策略梳理
+
+重写路由，重写组件map,生成client和server的编译Promise，这个promise resolve之后启用app.handle
+入口文件entry client和server,
+server中，给req挂上commonContext上下文,universal-router控制路由
+    app.get('*.html', ahandler, bhandler);
+routes里面有各个路由对应的加载函数，定义了load,load动态加载一个文件，文件输出action函数，action动态加载@pages/subject,这个动态加载的组件就是最后的component,返回一个对象，这个对象挂在locals的route上，在renderHandle里面调用component
+初始化store在renderHandle里面，调用组件上的initProps方法，这个是通过装饰器注入到类里面的，最后renderToString，插入到html里面
+entry/client里面基本是个空壳，啥都没有,csr的时候注入client的chunk
+
 ## 装饰器写法
 https://blog.csdn.net/zl_best/article/details/94447018
 
@@ -294,6 +303,7 @@ https://www.jianshu.com/p/8af1bd7308ab
 https://www.jianshu.com/p/dfefa9d7ab55
 
 手写深拷贝，
+https://juejin.cn/post/6844904197595332622
 
 防抖、截流 https://juejin.cn/post/6844903752063778830
 bind,call,apply, 
