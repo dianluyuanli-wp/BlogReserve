@@ -14,6 +14,14 @@
 同一个页面分两块，隐藏一部分（体验流畅，但是首页比较臃肿）
 
 computed原理梳理
+根据是否是页面或组件跑不同的方法，通过option传入的内容，进行处理后返回真正的option
+拿的实例数组，跑prepStore,给实例注入唯一key,注入update方法，将observable移动到data中
+定义了各种包装过的原生方法onshow onload等等，进行了各种缓存操作,
+createStr给页面或者组件实例绑定store
+通过changeProObser给property添加observer方法，在属性改变时强制setDat,触发computed的计算与更新
+通过hooksetda来魔改原来的setdata方法，先计算computed再执行setData的内容，hooked这个给页面组件的data：xxstore.xxx赋store的初始值，维护全局map，这个方法放在魔改方法里，在特定的时候跑一遍setdata
+其实是有两个更新路径，setData和update，update的时候先data再com,setData的时候先com再data
+
 
 ## 综合商品列表
 原来问题：
@@ -41,6 +49,7 @@ entry/client里面基本是个空壳，啥都没有,csr的时候注入client的c
 
 ## 装饰器写法
 https://blog.csdn.net/zl_best/article/details/94447018
+通过装饰器log给一个类新增logger方法,如果带参数，返回的是科里化的结果函数
 
 装饰器实战
 https://juejin.cn/post/6844903506562777101
