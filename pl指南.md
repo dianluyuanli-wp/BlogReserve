@@ -21,6 +21,7 @@ createStr给页面或者组件实例绑定store
 通过changeProObser给property添加observer方法，在属性改变时强制setDat,触发computed的计算与更新
 通过hooksetda来魔改原来的setdata方法，先计算computed再执行setData的内容，hooked这个给页面组件的data：xxstore.xxx赋store的初始值，维护全局map，这个方法放在魔改方法里，在特定的时候跑一遍setdata
 其实是有两个更新路径，setData和update，update的时候先data再com,setData的时候先com再data
+自主实现computed，update的时候可以直接同步页面UI
 
 
 ## 综合商品列表
@@ -328,6 +329,9 @@ https://juejin.cn/post/6844903645222273037
 
 # 浏览器缓存
 https://juejin.cn/post/6855469171703185416
+更细
+https://juejin.cn/post/6844903763665240072
+
 强缓存，协商缓存
 
 
@@ -425,3 +429,7 @@ margin: auto;
 
 
 盒模型，计算样式权重
+
+前端算法题
+
+https://blog.csdn.net/weixin_38984353/article/details/80393412
