@@ -438,3 +438,9 @@ https://blog.csdn.net/weixin_38984353/article/details/80393412
 https://segmentfault.com/a/1190000020072884
 
 https://juejin.cn/post/6844904122848641032
+
+git 细节版本
+https://github.com/biaochenxuying/blog/issues/42
+
+h5性能优化
+https://juejin.cn/post/6904517485349830670
