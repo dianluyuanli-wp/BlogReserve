@@ -46,7 +46,7 @@ import 'global.dart';
 void main() => Global.init().then((e) => runApp(MyApp(info: e)));
 ```
 接下来我们查看`global.dart`文件
-```
+```dart
 library global;
 
 import 'dart:convert';
@@ -136,7 +136,7 @@ global.dart文件中定义了Profile类，这个类定义了用户的持久化�
 
 2. 状态管理
 接下来我们回到main.dart中，观察MyApp类的实现：
-```
+```dart
 class MyApp extends StatelessWidget with CommonInterface {
   MyApp({Key key, this.info}) : super(key: key);
   final info;
@@ -162,7 +162,7 @@ class MyApp extends StatelessWidget with CommonInterface {
 }
 ```
 MyApp类做的做主要的工作就是创建整个应用的状态实例，包括用户信息，webSocket实例以及聊天信息等。通过`provider`库中的MultiProvider，根据状态的类型，以类似键值对的形式将状态实例暴露给子组件，方便子组件读取和使用。其原理有些类似于前端框架react中的Context,能够跨组件传递参数。这里我们继续查看UserModle的定义：
-```
+```dart
 part of global;
 
 class ProfileChangeNotifier extends ChangeNotifier {
@@ -194,13 +194,13 @@ class UserModle extends ProfileChangeNotifier {
 }
 ```
 为了在改变数据的时候能够同步更新UI，这里UserModel继承了ProfileChangeNotifier类，该类定义了notifyListeners方法，UserModel内部设置了各个属性的set和get方法，将读写操作代理到Global.profile上，同时劫持set方法，使得在更新模型的值的时候会自动触发notifyListeners函数，该函数负责更新UI和同步状态的修改到持久化的状态管理中。在具体的业务代码中，如果要改变model的状态值，可以参考如下代码：  
-```
+```dart
     if (key == 'avatar') {
       Provider.of<UserModle>(context).avatar = '图片url';
     }
 ```
 这里通过provider包，根据提供的组件context,在组件树中上溯寻找最近的UserModle,并修改它的值。这里大家可能会抱怨，只是为了单纯读写一个值，前面居然要加如此长的一串内容，使用起来太不方便，为了解决这个问题，我们可以进行简单的封装,在global.dart文件中我们有如下的定义：
-```
+```dart
 //  给其他widget做的抽象类，用来获取数据
 abstract class CommonInterface {
   String cUser(BuildContext context) {
@@ -213,7 +213,7 @@ abstract class CommonInterface {
 }
 ```
 通过一个抽象类，将参数的前缀部分都封装起来，具体使用如下：
-```
+```dart
 class testComponent extends State<FriendList> with CommonInterface {
     ...
     if (key == 'avatar') {
@@ -223,7 +223,7 @@ class testComponent extends State<FriendList> with CommonInterface {
 ```
 3. 路由管理  
 接下来我们继续梳理main.dart文件：
-```
+```dart
 class ContextContainer extends StatefulWidget {
   //    后文中类似代码将省略
   @override
@@ -281,7 +281,7 @@ class _ListenContainerState extends State<ListenContainer> with CommonInterface 
 ![登录页](https://user-gold-cdn.xitu.io/2020/2/6/1701a8a9253485c5?w=1080&h=1920&f=png&s=70464)  
 其代码在login.dart文件中：
 
-```
+```dart
 class LogIn extends StatefulWidget {
     ...
 }
@@ -388,7 +388,7 @@ class _LogInState extends State<LogIn> {
 对这个路由页进行简单的拆解后，我们发现该页面的主干就三个组件，两个TextFormField分别用作用户名和密码的表单域，一个RaisedButton用做登录按钮。这里是最典型的TextFormField widget应用，通过组件的controller来获取填写的值，TextFormField的validator会自动对填写的内容进行校验，但要注意的是，只要在这个页面，validator的校验每时每刻都会运行，感觉很不智能。登录验证通过后，会拉取用户的聊天记录。  
 * 项目主页  
 继续回到我们的main.dart文件，主页的页面绘制内容如下：  
-```
+```dart
 class MyHomePage extends StatefulWidget {
     ...
 }
@@ -484,7 +484,7 @@ class MiddleContent extends StatelessWidget {
 底部tab的我们通过BottomNavigationBarItem来实现，每个item绑定点击事件，点击时切换展示的组件，聊天列表、搜索和个人中心都通过单个的组件来实现,由MiddleContent来包裹，并不改变路由。  
 * 聊天页  
 在聊天列表页点击任意对话，即进入聊天页：  
-```
+```dart
 class ChatState extends State<Chat> with CommonInterface {
   ScrollController _scrollController = ScrollController(initialScrollOffset: 18000);
 
@@ -524,7 +524,7 @@ class ChatState extends State<Chat> with CommonInterface {
 }
 ```
 这里的结构相对简单，由TalkList和ChatInputForm分别构成聊天页和输入框，外围用Scaffold包裹，实现用户名展示和右上角点击icon，接下来我们来看看TalkList组件：
-```
+```dart
 class _TalkLitState extends State<TalkList> with CommonInterface {
   bool isLoading = false;
 
@@ -574,7 +574,7 @@ class _TalkLitState extends State<TalkList> with CommonInterface {
 ```
 这里的关键是通过NotificationListener实现用户在下拉操作时拉取更多聊天信息，即分次加载。通过widget.scrollController.position.pixels来读取当前滚动列表的偏移值，当其小于10时即判定为滑动到顶部，此时执行_getMoreMessage拉取更多消息。这里详细解释下聊天功能的实现：消息的传递非常频繁，使用普通的http请求来实现是不现实的，这里通过dart端的socket.io来实现消息交换(类似于web端的webSocket,服务端就是用node上的socket.io server实现的)，当你发送消息时，首先会更新本地的消息列表，同时通过socket的实例向服务器发送消息，服务器收到消息后将接收到的消息转发给目标用户。目标用户在初始化app时，就会监听socket的相关事件，收到服务器的消息通知后，更新本地的消息列表。具体的过程比较繁琐，有很多实现细节，这里暂时略去，完整实现在源码中。  
 接下来我们查看ChatInputForm组件  
-```
+```dart
 class _ChatInputFormState extends State<ChatInputForm> with CommonInterface {
   TextEditingController _messController = new TextEditingController();
   GlobalKey _formKey = new GlobalKey<FormState>();
@@ -630,7 +630,7 @@ class _ChatInputFormState extends State<ChatInputForm> with CommonInterface {
 ```
 这里用Form包裹TextFormField组件，通过注册onChanged方法来对输入内容进行校验，防止其为空，点击发送按钮后通过socket实例发送消息，列表滚动到最底部，并且清空当前输入框。  
 * 个人中心页  
-```
+```dart
 class _MyAccountState extends State<MyAccount> with CommonInterface{
   @override
   Widget build(BuildContext context) {
@@ -704,7 +704,7 @@ void modify(BuildContext context, String text, String keyName, String owner) {
 * 个人信息修改页(昵称)
 效果图如下：  
 ![](https://user-gold-cdn.xitu.io/2020/2/11/1703470bae0bb16b?w=587&h=290&f=jpeg&s=62626)
-```
+```dart
 class NickName extends StatefulWidget {
   NickName({Key key, @required this.handler, @required this.modifyFunc, @required this.target}) 
     : super(key: key);
@@ -753,7 +753,7 @@ class _NickNameState extends State<NickName> with CommonInterface{
 ![裁剪页](https://user-gold-cdn.xitu.io/2020/2/11/170347605ba0185d?w=1080&h=1920&f=jpeg&s=97271)  
 
 代码实现如下：  
-```
+```dart
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 import '../../tools/base64.dart';
