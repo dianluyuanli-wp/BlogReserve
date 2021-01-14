@@ -514,7 +514,33 @@ https://juejin.cn/post/6898278714312753159#heading-0
 
 proxy看看
 
+<<<<<<< HEAD
 链表
 
 前端算法leetCode
 https://juejin.cn/post/6847009772500156429#heading-15
+=======
+面经干货 
+https://juejin.cn/post/6844904149386002440
+
+hppts过程
+react如何动态加载
+react diff算法
+es module和commonjs的区别
+cors是如何做的
+大数加法，精度函数
+联想搜索组件
+let const var 变量提升
+两个链表第一个公共节点 https://www.nowcoder.com/practice/6ab1d9a29e88450685099d45c9e31e46?tpId=117
+
+牛客面经干货
+https://www.nowcoder.com/discuss/538616
+
+手写EventEmitter
+promise控制异步并发很重要
+总结归纳帖子
+https://www.nowcoder.com/discuss/213693
+手写promise.all race
+自己实现一个event类
+
+>>>>>>> f46fc3f59b3d2852961e19239e3ae49920ba0127
