@@ -437,11 +437,11 @@ websocket机理，
 
 小程序底层机理，
 https://juejin.cn/post/6844903638226173965
-小程序启动加载性能
+## 小程序启动加载性能
 控制代码包的大小
 分包加载
 首屏体验（预请求，利用缓存，避免白屏，及时反馈
-小程序渲染性能
+## 小程序渲染性能
 避免不当的使用setData
 合理利用事件通信
 避免不当的使用onPageScroll
@@ -464,6 +464,8 @@ h5性能优化
 https://juejin.cn/post/6904517485349830670
 
 http,tcp,udp
+tcp 全双工，三握四挥，全双工,点对点
+udp 可以一对多，多对一，一对一，不需要连接，直接发数据，速度快，不保证一定会到达，适合广播
 https://juejin.cn/post/6844903872339804167#heading-4
 //  网络模型
 https://juejin.cn/post/6844904049800642568
@@ -488,6 +490,9 @@ https://juejin.cn/post/6844904049800642568
 三次握手，四次挥手
 SYN，表示同步，ACK表示响应，seq标识序列号，发送的时候seq,
 FIN表示finish,先FIN,seq=a,服务器ACK,seq=a+1,然后FIN，seq=b,最后发起方ACK,seq=b+1
+## 为什么要三次四次
+https://juejin.cn/post/6844903913611591688
+最后一次服务端需要确认客户端收到了，四次因为服务器可能还要再发送，不能把FIN和ACK一同发送
 
 http只能浏览器发起，
 1.0是个短链接，发完就关闭
@@ -503,7 +508,7 @@ User-agent:浏览器类型，Accep，可接受的数据类型，Accept-Encoding,
 响应
 状态行
 状态码和协议版本
-响应报头
+响应报头 date server content-length connection set-cookie等
 空行
 响应报文
 
@@ -511,18 +516,27 @@ http报文详解
 
 BFC
 https://juejin.cn/post/6898278714312753159#heading-0
+里面的元素不会影响外面的元素，表现方式从上到下依次排列
 
 proxy看看
+https://juejin.cn/post/6844904090116292616
 
 链表
+https://juejin.cn/post/6844904023531716616
 
 前端算法leetCode
 https://juejin.cn/post/6847009772500156429#heading-15
 面经干货 
 https://juejin.cn/post/6844904149386002440
 
-hppts过程
+# hppts过程
+https://juejin.cn/post/6844903602494898183
+通信使用密文，验证身份，验证内容完整性
+ssl基于应用层与传输层
+HTTPS并不是一个单独的应用层协议，而只是Http使用SSL通道进行数据传输的过程。
+
 react如何动态加载
+Ack = () => import('xxxxxx');
 react diff算法
 es module和commonjs的区别
 cors是如何做的
@@ -536,6 +550,7 @@ https://www.nowcoder.com/discuss/538616
 
 手写EventEmitter
 promise控制异步并发很重要
+https://juejin.cn/post/6916317088521027598#heading-1
 总结归纳帖子
 https://www.nowcoder.com/discuss/213693
 手写promise.all race
