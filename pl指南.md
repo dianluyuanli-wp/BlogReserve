@@ -556,3 +556,6 @@ https://www.nowcoder.com/discuss/213693
 手写promise.all race
 自己实现一个event类
 
+手写jsonp实现
+https://juejin.cn/post/6844904021401010184
+
