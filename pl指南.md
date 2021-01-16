@@ -517,6 +517,7 @@ http报文详解
 BFC
 https://juejin.cn/post/6898278714312753159#heading-0
 里面的元素不会影响外面的元素，表现方式从上到下依次排列
+父元素：overflow:hidden display：flow-root,加border: 1px solid padding: 1px
 
 proxy看看
 https://juejin.cn/post/6844904090116292616
