@@ -102,7 +102,7 @@ react 原理
 
 # Socket长连接
 https://www.cnblogs.com/nnngu/p/9347635.html
-1\握手阶段使用http
+1\握手阶段使用tcp
 可以实现浏览器和服务器互相通信
 建立在tcp协议之上
 
