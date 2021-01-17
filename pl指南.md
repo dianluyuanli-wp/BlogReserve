@@ -540,9 +540,14 @@ react如何动态加载
 Ack = () => import('xxxxxx');
 react diff算法
 es module和commonjs的区别
+https://juejin.cn/post/6844904080955932680#heading-12
+commonjs支持可以在运行时使用变量进行 require, 静态语法import不行，ES6模块会先解析所有模块再执行代码
+
 cors是如何做的
 大数加法，精度函数
 联想搜索组件
+https://juejin.cn/post/6904151596960071687
+
 let const var 变量提升
 两个链表第一个公共节点 https://www.nowcoder.com/practice/6ab1d9a29e88450685099d45c9e31e46?tpId=117
 
@@ -564,6 +569,10 @@ https://www.nowcoder.com/discuss/213693
 匹配电话区号
 区号3-4位，第一位为0，中横线，7-8位数字
 /0[\d]{2,3}-[\d]{7,8}/
+
 手写jsonp实现
 https://juejin.cn/post/6844904021401010184
+
+常见手写代码
+https://juejin.cn/post/6917811484898623495#heading-0
 
