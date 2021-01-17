@@ -464,7 +464,7 @@ h5性能优化
 https://juejin.cn/post/6904517485349830670
 
 http,tcp,udp
-tcp 全双工，三握四挥，全双工,点对点
+tcp 全双工，三握四挥，全双工,点对点,保证可靠连接
 udp 可以一对多，多对一，一对一，不需要连接，直接发数据，速度快，不保证一定会到达，适合广播
 https://juejin.cn/post/6844903872339804167#heading-4
 //  网络模型
@@ -517,6 +517,7 @@ http报文详解
 BFC
 https://juejin.cn/post/6898278714312753159#heading-0
 里面的元素不会影响外面的元素，表现方式从上到下依次排列
+父元素：overflow:hidden display：flow-root,加border: 1px solid padding: 1px
 
 proxy看看
 https://juejin.cn/post/6844904090116292616
@@ -556,6 +557,13 @@ https://www.nowcoder.com/discuss/213693
 手写promise.all race
 自己实现一个event类
 
+正则表达式
+由字母开头，由字母数字下划线组成的6-30位字符串
+/^[a-zA-z][a-zA-Z0-9_]{5,29}/
+
+匹配电话区号
+区号3-4位，第一位为0，中横线，7-8位数字
+/0[\d]{2,3}-[\d]{7,8}/
 手写jsonp实现
 https://juejin.cn/post/6844904021401010184
 
