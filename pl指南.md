@@ -462,6 +462,21 @@ https://github.com/biaochenxuying/blog/issues/42
 
 h5性能优化
 https://juejin.cn/post/6904517485349830670
+# 技术选型
+# NetWork
+time to first byte
+# webpack bundle analyzer
+# performance
+浏览器模块，并发请求，FCP LCP是否过长
+
+优化点：
+tree shake 
+split Chunk
+压缩，
+图片cdn优化
+懒加载
+后端渲染
+预加载
 
 http,tcp,udp
 tcp 全双工，三握四挥，全双工,点对点,保证可靠连接
@@ -575,4 +590,23 @@ https://juejin.cn/post/6844904021401010184
 
 常见手写代码
 https://juejin.cn/post/6917811484898623495#heading-0
+
+h5性能优化，火焰图
+
+前端首屏性能参数
+https://juejin.cn/post/6844904020482457613
+白屏时间
+head标签头部和尾部
+首屏时间
+白屏时间+首屏渲染时间
+可操作时间
+dom.ready触发时间
+总下载时间
+window.onload触发时间点
+
+window.performance
+
+First Meaningful Paint 谷歌
+DCL DOMContentLoaded Event FirstPaint FP(第一个内容) PCP First Contentful Paint(第一个图片或文字) FMP LCP Largest Contentful Paint Onload Event
+http://www.alloyteam.com/2016/01/points-about-resource-loading/ 首屏时间细节
 
