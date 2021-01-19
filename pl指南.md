@@ -315,6 +315,7 @@ https://www.jianshu.com/p/dfefa9d7ab55
 
 手写深拷贝，
 https://juejin.cn/post/6844904197595332622
+浅拷贝方法：Object.assign,展开运算符，concat,slice
 
 防抖、截流 https://juejin.cn/post/6844903752063778830
 bind,call,apply, 
@@ -392,7 +393,11 @@ https://www.jianshu.com/p/6925ed009f1e
 
 手写观察者模式
 204和304之间区别
-两个进程之间如何通信？子网掩码有什么作用？
+两个进程之间如何通信？
+https://juejin.cn/post/6844904199902199822#heading-11
+http://www.voidcn.com/article/p-dplsmcdk-bsq.html
+child_process.fork()
+子网掩码有什么作用？
 
 # css
 水平垂直居中
