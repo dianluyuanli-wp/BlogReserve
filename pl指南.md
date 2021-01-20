@@ -561,6 +561,10 @@ Ack = () => import('xxxxxx');
 react diff算法
 es module和commonjs的区别
 https://juejin.cn/post/6844904080955932680#heading-12
+
+https://juejin.cn/post/6844904137159606285
+common 模块依赖关系建立发生在代码运行阶段，输出是拷贝，
+Module依赖关系的建立发生在代码编译阶段，输出是动态映射
 commonjs支持可以在运行时使用变量进行 require, 静态语法import不行，ES6模块会先解析所有模块再执行代码
 
 cors是如何做的
@@ -610,6 +614,8 @@ head标签头部和尾部
 白屏时间+首屏渲染时间
 可操作时间
 dom.ready触发时间
+DOMContentLoaded
+https://zhuanlan.zhihu.com/p/25876048
 总下载时间
 window.onload触发时间点
 
