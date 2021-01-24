@@ -625,3 +625,15 @@ First Meaningful Paint 谷歌
 DCL DOMContentLoaded Event FirstPaint FP(第一个内容) PCP First Contentful Paint(第一个图片或文字) FMP LCP Largest Contentful Paint Onload Event
 http://www.alloyteam.com/2016/01/points-about-resource-loading/ 首屏时间细节
 
+node 如何排查内存泄漏？
+V8内部，会为程序所有的变量构建一个图，用来标识变量间关系，当从根节点无法被触达时，标识这个变量不会再被使用，就是可回收的
+引用不释放，导致无法进入GC环节
+devTool heapdump chrome devTool memwatch
+node 64位最大内存1.4g,32位0.7g
+获取堆快照，使用chrome dev载入，进行比对
+
+https://juejin.cn/post/6877869159309377544
+https://juejin.cn/post/6844903439747514376
+
+前端web安全
+
