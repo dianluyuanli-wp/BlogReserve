@@ -621,6 +621,7 @@ window.onload触发时间点
 
 window.performance
 
+FMP DCL FP FCP LMP LCP
 First Meaningful Paint 谷歌
 DCL DOMContentLoaded Event FirstPaint FP(第一个内容) PCP First Contentful Paint(第一个图片或文字) FMP LCP Largest Contentful Paint Onload Event
 http://www.alloyteam.com/2016/01/points-about-resource-loading/ 首屏时间细节
@@ -636,4 +637,13 @@ https://juejin.cn/post/6877869159309377544
 https://juejin.cn/post/6844903439747514376
 
 前端web安全
+https://juejin.cn/post/6844903876106125319
+标签转译
+跨站脚本攻击 XSS（Cross-site scripting）
+跨站请求伪造 CSRF(Cross Site Request Frogy) 
+增加验证码，cookies设置sameSite, 验证refer，验证token
 
+jsbridge实现
+https://juejin.cn/post/6844903702721986568
+js调用native：schemal拦截，url拦截，popup,alert拦截
+native调h5 获取window上挂载的对象
