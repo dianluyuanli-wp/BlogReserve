@@ -66,8 +66,8 @@ css代码
         ]
     }
 ```
-从这里的配置我们可以看到，业务代码使用了css moudle,由于antd的组件使用less编写，这里我们使用了less loader来处理样式，less的部分没有开启css loader故而在dom中看得到的类名还是原始类名。当然，如果你的项目并没有启用css module,直接使用原始类名来控制样式，那就不存在这个问题了。  
-2. 运用多种css文件打包策略
+从这里的配置我们可以看到，业务代码使用了css moudle,由于antd的组件使用less编写，这里我们使用了less loader来处理样式，less的部分没有开启css loader故而在dom中看得到的类名还是原始类名。当然，如果你的项目并没有启用css module,直接使用原始类名来控制样式，那就不存在这个问题了。   
+2. 运用多种css文件打包策略  
 上文已经分析了问题的根源，接下来就是如何解决问题，最自然的思路就是针对这部分特殊的需求，采用特殊的css样式打包策略,简单来说就是针对antd组件的样式，在外面挂上一个常规的字符串类名，使用单独的css文件来控制样式，在打包的时候，对这种文件采取特殊的策略，即不启用css module，这样就跟antd组件的类名处理方式保持一致，就可以通过css的类名选择器来直接控制样式了。webpack配置如下  
 ```js
     module: {
@@ -134,7 +134,7 @@ import './index.antd.css';
 接下来我们看下效果：  
 ![第二步.png](https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/42be9f97b1ca40bca9e3db19fd3b6997~tplv-k3u1fbpfcp-watermark.image)  
 从这里我们可以看到，外围的`feeInput`类已经成功地通过类选择器修改了antd自带的`.ant-input`样式。    
-3. 终极解决方案
+3. 终极解决方案  
 问题解决了，但是实操过程过于繁琐，要多出来一个文件，还要新增webpack打包规则，不符合`less is more`的规则，那么有没有更好的方案呢?这里有一点可以注意下，css module针对全局的样式（使用`:global`包裹的），不会将类名进行hash化，换句话来说，我们可以利用这一点，将antd组件外部用来精细化控制样式的类定义在`:global`中，这样就避免了类名hash化，可以配合antd的类名规则，实现样式控制。具体代码如下：
 ```js
 import s from './index.css';
