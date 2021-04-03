@@ -157,6 +157,27 @@ js的代码不用引入专门的`index.antd.css`文件了，css文件这样改�
     user-select: none;
 }
 ```
+这种方法由于css语法的限制，导致类名无法被hash化，有污染全局类滚的危险，如果启用了scss,less,sass等等预编译的工具，更加完善的方案是这样
+```scss
+.fee11Input {
+    :global {
+        .ant-input {
+            background-color: #ffffff !important;
+            font-size: .14rem;
+            color: #555555  !important;
+            user-select: none;
+        }
+    }
+}
+```
+外围的代码要改成css module的方式
+```js
+    <Input
+        disabled
+        value={lanWrap('Transfer fee')}
+        addonAfter={fee}
+        className={cx(s.fee11Input)}/>
+```
 接下来我们看看效果：
 ![第三步.png](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/cfe3bb013c6641e6a9d5122d2bd8bfa0~tplv-k3u1fbpfcp-watermark.image)  
 效果如预期，完成了对antd组件内嵌样式的完美修改！没有第二种方案中引入多余文件的问题，简洁高效。
