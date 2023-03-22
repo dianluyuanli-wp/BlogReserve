@@ -49,6 +49,23 @@ routes里面有各个路由对应的加载函数，定义了load,load动态加�
 初始化store在renderHandle里面，调用组件上的initProps方法，这个是通过装饰器注入到类里面的，最后renderToString，插入到html里面
 entry/client里面基本是个空壳，啥都没有,csr的时候注入client的chunk
 
+## 字节
+字节跳动海外广告业务线，tiktok海外广告展示站点creative center. 展示当前Tik Tok的流行趋势，热词，背景音乐等等，以及各个行业效果出众的广告，方便广告主进行参考。同时还提供便捷的渠道方便广告主跳转到广告投放和生成页面。
+
+使用next.js架构进行后端渲染，优化用户体验，方便进行SEO，页面内提供了行业国家等等筛选器，方便广告主快速定位自己感兴趣的素材或者行业广告，引入缓存机制，降低服务期负担。
+
+seo优化，html标签语义化改造，htmlheader动态添加关键词和描述，每次发布时自动更新sitemap，方便google爬虫更新站点的页面内容
+
+## 自创
+将链上数据通过图形化的方式呈现给用户，方便用户进行体验，用户可以在宏观数据，衍生品，市场估值等等板块中寻找自己关心的内容进行探索，用户可以收藏和分享他喜欢的内容，同时也提供了高效的站内搜索功能以及国际化
+
+设计了一套架构，能够快速生成各种不同类型的图表，将echarts的option生成过程中的几个关键节点插入函数钩子，方便各个图表进行定制化开发，每个图标只需要修改少数内容就可以沿用尽可能多的图表公共逻辑。
+
+设计了后端JWT用户认证架构和引入redis缓存，提高服务性能，避免频繁查询mysql底表
+自建大数据集群，编写定时任务自动处理新生成的数据，设计数据结构存储海量区块数据，同时兼顾后续图表数据的产出
+
+
+
 ## 装饰器写法
 https://blog.csdn.net/zl_best/article/details/94447018
 通过装饰器log给一个类新增logger方法,如果带参数，返回的是科里化的结果函数
@@ -319,7 +336,7 @@ https://juejin.cn/post/6844904197595332622
 
 防抖、截流 https://juejin.cn/post/6844903752063778830
 bind,call,apply, 
-https://juejin.cn/post/6844903846846676999
+https://juejin.cn/post/7128233572380442660
 await async
 https://juejin.cn/post/6844904102053281806#heading-0
 核心是把async改写成generator，然后用一个asyncToGenerator来直线generator的自动执行
@@ -348,12 +365,14 @@ https://juejin.cn/post/6844903763665240072
 expires 绝对时间
 
 Cache-Control（优先级高于Expires）
+max-age
 no-cache：需要进行协商缓存，发送请求到服务器确认是否使用缓存。
 no-store：禁止使用缓存，每一次都要重新请求数据。
 public：可以被所有的用户缓存，包括终端用户和 CDN 等中间代理服务器。
 private：只能被终端用户的浏览器缓存，不允许 CDN 等中继缓存服务器对其缓存。
 Cache-Control 与 Expires 可以在服务端配置同时启用，同时启用的时候 Cache-Control 优先级高。
 
+协商缓存：
 Last-Modify/If-Modify-Since
 ETag/If-None-Match
 
@@ -537,6 +556,7 @@ http报文详解
 BFC
 https://juejin.cn/post/6898278714312753159#heading-0
 里面的元素不会影响外面的元素，表现方式从上到下依次排列
+父子上边距合并，父子相邻边距，父子浮动，兄弟浮动
 父元素：overflow:hidden display：flow-root,加border: 1px solid padding: 1px
 
 proxy看看
@@ -647,3 +667,23 @@ jsbridge实现
 https://juejin.cn/post/6844903702721986568
 js调用native：schemal拦截，url拦截，popup,alert拦截
 native调h5 获取window上挂载的对象
+
+-----2023------
+查漏补缺 最近两周出去面试遇到的面试题（前端初级、长更）
+https://juejin.cn/post/7073869980411887652
+六年前端面试报告
+https://juejin.cn/post/7158019029163048974
+做了一份前端面试复习计划，保熟～
+https://juejin.cn/post/7061588533214969892
+//  细节补缺
+https://juejin.cn/post/6844904197595332622
+
+微前端，react最新版本的特性,18，vue新版本特性,vue3新特性
+service worker
+前端优化，btc项目核心梳理
+后端相关
+
+高级前端面筋
+https://www.bilibili.com/read/cv19424440?from=articleDetail
+https://segmentfault.com/a/1190000021966814
+https://github.com/kaindy7633/blog/issues/43
