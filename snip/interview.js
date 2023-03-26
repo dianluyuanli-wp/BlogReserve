@@ -2,7 +2,7 @@
  * @Author: dianluyuanli-wp
  * @LastEditors: dianluyuanli-wp
  * @Date: 2023-03-18 15:29:32
- * @LastEditTime: 2023-03-21 15:18:13
+ * @LastEditTime: 2023-03-24 11:56:05
  */
 //  装饰器,针对属性或方法
 function decorator(type) {
@@ -185,6 +185,22 @@ Function.prototype.mybind = function(target,...args) {
     }
     return fn;
 }
+Function.prototype.myBind = function (context) {
+    // 判断调用对象是否为函数
+    if (typeof this !== "function") {
+      throw new Error("Type error");
+    }
+    // 获取参数
+    const args = [...arguments].slice(1),
+    const fn = this;
+    return function Fn() {
+      return fn.apply(
+        this instanceof Fn ? this : context,
+        // 当前的这个 arguments 是指 Fn 的参数
+        args.concat(...arguments)
+      );
+    };
+  };
 //手动async await
 function* test() {
     let data = yield getdata();
@@ -402,9 +418,20 @@ function myInstance(target,origin) {
         if(proto===origin) {
             return true;
         }
-        proto = Object.getPrototypeOf(target);
+        proto = Object.getPrototypeOf(proto);
     }
     return false;
+}
+function myinstanceof(L, R) { //L是表达式左边，R是表达式右边
+    const O = R.prototype;
+    L = L.__proto__;
+    while(true) {
+        if (L === null)
+            return false;
+        if (L === O) // 这里重点：当 L 严格等于 0 时，返回 true 
+            return true;
+        L = L.__proto__;
+    }
 }
 //  数组扁平化
 function flat(arr,dep) {

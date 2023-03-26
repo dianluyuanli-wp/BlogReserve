@@ -221,6 +221,9 @@ componentDidMount
 componentDidUpdate
 componentWillUnmount
 
+需要注意的是：因为协调阶段可能被中断、恢复，甚至重做，⚠️React 协调阶段的生命周期钩子可能会被调用多次!, 例如 componentWillMount 可能会被调用两次。
+因此建议 协调阶段的生命周期钩子不要包含副作用. 索性 React 就废弃了这部分可能包含副作用的生命周期方法，例如componentWillMount、componentWillUpdate. v17后我们就不能再用它们了, 所以现有的应用应该尽快迁移.
+
 双缓冲：work in progress和current
 
 # 渲染图手绘
@@ -407,7 +410,7 @@ DNS域名解析
   * 栅格化
   * 显示
 
-手写继承，
+手写继承
 https://www.jianshu.com/p/6925ed009f1e
 
 手写观察者模式
@@ -487,20 +490,59 @@ https://github.com/biaochenxuying/blog/issues/42
 h5性能优化
 https://juejin.cn/post/6904517485349830670
 # 技术选型
+根据业务特性选择合理的前端架构和技术栈
 # NetWork
+可以依次分析：
+请求资源size,
+请求资源时长
+请求资源数量
+接口响应时间
+接口发起数量，
+接口报文size
+接口响应状态
+瀑布图
+
 time to first byte
 # webpack bundle analyzer
-# performance
+
+显示模块的size和gzip之后的size
+显示所有打入的模块，观察是否有重复打包
+# performanceNavigationTiming
+DNS解析时间： domainLookupEnd - domainLookupStart
+tcp链接建立时间： connectEnd - connectionStart
+白屏时间： responseStart - navigationStart
+dom渲染时间： domContentLoadEnentEnd - navigationStart
+页面onload时间 loadEnentEnd - navigationStart
+# performace
+FCP/LCP时间是否过长
+请求并发是否过于频繁
+请求发起顺序是否不对
+jascript执行是否过慢
 浏览器模块，并发请求，FCP LCP是否过长
+
+# 性能测试工具
+chrome 自带performance, memory/profiler,recorder
 
 优化点：
 tree shake 
 split Chunk
-压缩，
-图片cdn优化
+拆包
+gzip压缩，
+图片压缩，分割，雪碧图
+静态资源上cdn
+使用iconfont字体图表替换图片
 懒加载
+逻辑后移
+算法复杂度
+避免组件频繁渲染
+添加node中间件合并请求
+webworker创造多线程环境
+善用缓存
+开启GPU渲染优化动画
+ajax get请求缓存
+resource hints资源预加载：DNS-prefetch preload
 后端渲染
-预加载
+域名发散
 
 http,tcp,udp
 tcp 全双工，三握四挥，全双工,点对点,保证可靠连接
@@ -668,6 +710,53 @@ https://juejin.cn/post/6844903702721986568
 js调用native：schemal拦截，url拦截，popup,alert拦截
 native调h5 获取window上挂载的对象
 
+链接：https://juejin.cn/post/6844904165462769678
+事件循环不一定每轮都伴随着重渲染，但是如果有微任务，一定会伴随着微任务执行。
+决定浏览器视图是否渲染的因素很多，浏览器是非常聪明的。
+requestAnimationFrame在重新渲染屏幕之前执行，非常适合用来做动画。
+requestIdleCallback在渲染屏幕之后执行，并且是否有空执行要看浏览器的调度，如果你一定要它在某个时间内执行，请使用 timeout参数。
+resize和scroll事件其实自带节流，它只在 Event Loop 的渲染阶段去派发事件到 EventTarget 上。
+
+链接：https://juejin.cn/post/6844904165462769678
+
+react hooks解决的问题
+函数组件中不能拥有自己的状态（state）。在hooks之前函数组件是无状态的，都是通过props来获取父组件的状态，但是hooks提供了useState来维护函数组件内部的状态。
+函数组件中不能监听组件的生命周期。useEffect聚合了多个生命周期函数。
+class组件中生命周期较为复杂（在15版本到16版本的变化大）。
+class组件逻辑难以复用（HOC，render props）。
+
+hooks对比class好处
+写法更加简洁
+业务代码更加聚合
+逻辑复用方便
+
+https://juejin.cn/post/6844903744518389768
+commonjs
+所有代码都运行在模块作用域，不会污染全局作用域。
+模块可以多次加载，但是只会在第一次加载时运行一次，然后运行结果就被缓存了，以后再加载，就直接读取缓存结果。要想让模块再次运行，必须清除缓存。
+模块加载的顺序，按照其在代码中出现的顺序。
+
+AMD
+使用require.js,支持异步
+
+CMD
+CMD规范专门用于浏览器端，模块的加载是异步的，模块使用时才会加载执行。CMD规范整合了CommonJS和AMD规范的特点。
+
+ES6模块化
+ES6 模块的设计思想是尽量的静态化，使得编译时就能确定模块的依赖关系，以及输入和输出的变量。CommonJS 和 AMD 模块，都只能在运行时确定这些东西。
+
+ES6 模块与 CommonJS 模块的差异
+它们有两个重大差异：
+① CommonJS 模块输出的是一个值的拷贝，ES6 模块输出的是值的引用。
+② CommonJS 模块是运行时加载，ES6 模块是编译时输出接口。
+
+前端内存泄漏场景：
+闭包使用不当
+全局变量
+分离dom节点
+控制台打印
+遗忘定时器
+
 -----2023------
 查漏补缺 最近两周出去面试遇到的面试题（前端初级、长更）
 https://juejin.cn/post/7073869980411887652
@@ -678,8 +767,8 @@ https://juejin.cn/post/7061588533214969892
 //  细节补缺
 https://juejin.cn/post/6844904197595332622
 
-微前端，react最新版本的特性,18，vue新版本特性,vue3新特性
-service worker
+微前端，react最新版本的特性,18，vue新版本特性,vue3新特性,vite
+service worker,如何实现全屏换肤 useRef
 前端优化，btc项目核心梳理
 后端相关
 
