@@ -2,7 +2,7 @@
  * @Author: dianluyuanli-wp
  * @LastEditors: dianluyuanli-wp
  * @Date: 2023-03-18 15:29:32
- * @LastEditTime: 2023-03-24 11:56:05
+ * @LastEditTime: 2023-03-27 16:52:36
  */
 //  装饰器,针对属性或方法
 function decorator(type) {
@@ -122,43 +122,51 @@ function debounce(fn,delay,immediate) {
     return defn;
 }
 //截留
-function throttle(fn,wait,options) {
-    let timer,context,args;
+function thro(fn,wait,option) {
+    let timer;
     let previous=0;
-    let laterrun = function() {
-        previous=+new Date();
-        previous = options.leading === false ? 0 : +new Date();
-        timer = null;
-        fn.apply(context,args);
-        context = args = null;
-    }
-    function innerThr() {
-        let now = +new Date();
-        context=this;
-        args=arguments;
-        if(!previous && options.leading === false) {
-            previous = now;
+    function reaFn() {
+        let self = this;
+        let nowT = + new Date();
+        if(option.head && !previous) {
+            fn.call(this);
+            previous = nowT;
+            return;  
         }
-        let left = wait - (now-previous);
-        if(left<=0){
-            if(timer) {
+        let remain = wait - (nowT-previous);
+        if(remain <=0 && previous>0) {
+            fn.call(this);
+            previous = nowT
+        } else if (!timer && option.tailing) {
+            timer = setTimeout(() => {
+                fn.call(self);
+                previous = nowT
                 clearTimeout(timer);
                 timer=null;
-            }
-            previous=now;
-            fn.apply(context,args);
-            context = args = null;
-        } else if (!timer && !options.trailing) {
-            timer = setTimeout(laterrun, left);
+            },remain > 0 ? remain : wait)
         }
     }
-    throttle.cancel = function() {
+    reaFn.cancle = function() {
         clearTimeout(timer);
-        previous=0;
-        timer=context=args=null;
+        timer=null;
+        previous=0
     }
-    return innerThr;
+    return reaFn;
 }
+let now = + new Date();
+let say = () => {
+    let nn = + new Date();
+    console.log(111, nn - now);
+}
+let newSay = thro(say,1000,{
+    head:true,
+    tailing: true
+});
+setTimeout(newSay,0);
+setTimeout(newSay,100);
+setTimeout(newSay,500);
+setTimeout(newSay,3000);
+setTimeout(newSay,3700);
 //手动bind,call,apply
 Function.prototype.mycall = function(target,...args) {
     let context = target || window;
@@ -274,6 +282,17 @@ Function.prototype.unCurry = function() {
     let self = this;
     return function() {
         return Function.prototype.call.apply(self, arguments);
+    }
+}
+function myinstanceof(L, R) { //L是表达式左边，R是表达式右边
+    const O = R.prototype;
+    L = L.__proto__;
+    while(true) {
+        if (L === null)
+            return false;
+        if (L === O) // 这里重点：当 L 严格等于 0 时，返回 true 
+            return true;
+        L = L.__proto__;
     }
 }
 //  寄生组合继承
