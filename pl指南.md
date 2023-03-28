@@ -535,13 +535,13 @@ gzip压缩，
 逻辑后移
 算法复杂度
 避免组件频繁渲染
+后端渲染
 添加node中间件合并请求
 webworker创造多线程环境
-善用缓存
 开启GPU渲染优化动画
+善用缓存
 ajax get请求缓存
 resource hints资源预加载：DNS-prefetch preload
-后端渲染
 域名发散
 
 http,tcp,udp
@@ -720,8 +720,10 @@ resize和scroll事件其实自带节流，它只在 Event Loop 的渲染阶段�
 链接：https://juejin.cn/post/6844904165462769678
 
 react hooks解决的问题
-函数组件中不能拥有自己的状态（state）。在hooks之前函数组件是无状态的，都是通过props来获取父组件的状态，但是hooks提供了useState来维护函数组件内部的状态。
-函数组件中不能监听组件的生命周期。useEffect聚合了多个生命周期函数。
+函数组件中不能拥有自己的状态（state）。
+在hooks之前函数组件是无状态的，都是通过props来获取父组件的状态，但是hooks提供了useState来维护函数组件内部的状态。
+函数组件中不能监听组件的生命周期。
+useEffect聚合了多个生命周期函数。
 class组件中生命周期较为复杂（在15版本到16版本的变化大）。
 class组件逻辑难以复用（HOC，render props）。
 
