@@ -702,8 +702,32 @@ https://juejin.cn/post/6844903439747514376
 https://juejin.cn/post/6844903876106125319
 标签转译
 跨站脚本攻击 XSS（Cross-site scripting）
+获取页面数据，dom,cookie,localStorage等
+劫持前端逻辑，
+发送请求
+
+反射型：通过url参数直接注入
+存储型：存到数据库后读取注入
+基于dom: 被执行恶意脚本修改页面结构
+
+防御：
+X-XSS-Protection
+代码转义，进行json序列化
+使用httpOnly
+http头部Content-Security-Policy，控制浏览器可以获取那些资源
+
 跨站请求伪造 CSRF(Cross Site Request Frogy) 
-增加验证码，cookies设置sameSite, 验证refer，验证token
+增加验证码，cookies设置sameSite, 验证refer，验证token，更换登录态方案，不使用cookie
+
+1.登录受信任网站A，并在本地生成Cookie。
+2.在不登出A的情况下，访问危险网站B。
+
+vw/vh 
+基于视口来计算，100vw等于视口宽度
+rem
+等同于根元素的font-size,1rem=根元素font-size
+媒体查询
+em计算的标准是自己的父元素
 
 jsbridge实现
 https://juejin.cn/post/6844903702721986568
@@ -759,6 +783,41 @@ ES6 模块与 CommonJS 模块的差异
 控制台打印
 遗忘定时器
 
+https://juejin.cn/post/7211800391012237368
+什么是微前端？
+微前端就是将不同的功能按照不同的维度拆分成多个子应用。通过主应用来加载这些子应用。
+
+不同团队间开发同一个应用技术栈不同怎么破？
+希望每个团队都可以独立开发，独立部署怎么破？
+项目中还需要老的应用代码怎么破
+
+iframe有什么问题？
+如果使用iframe，iframe中的子应用切换路由时用户刷新页面就尴尬了。
+浏览器路径不同步。浏览器刷新之后，iframe链接状态丢失。浏览器前进后退按钮在iframe中也是无法使用的。
+DOM 结构不共享。想象一下屏幕右下角 的 iframe 需要一个居中的弹框，我们可以通过iframe通信的方式实现，但是会给我们增加不必要的复杂度。
+iframe间cookie管理成本较高，我们需要在iframe中共享同一个cookie。
+慢。每次子应用进入都需要重建浏览器上下文、资源也会重新加载。
+
+实现方式：
+iframe
+微前端的最简单方案，通过iframe加载子应用。 通信可以通过postMessage进行通信。 完美的沙箱机制自带应用隔离。
+Web Components
+将前端应用程序分解为自定义 HTML 元素。 基于CustomEvent实现通信
+Shadow DOM天生的作用域隔离
+single-spa
+single-spa 通过路由劫持实现应用的加载(采用SystemJS)，提供应用间公共组件加载及 公共业务逻辑处理。子应用需要暴露固定的钩子 bootstrap、mount、 unmount)接入协议。
+Module federation
+通过模块联邦将组件进行打包导出使用 共享模块的方式进行通信 无CSS沙箱和JS沙箱
+
+react 18 新特性
+https://juejin.cn/post/7094037148088664078
+引入并发渲染concurrent
+React 17 和 React 18 的区别就是：从同步不可中断更新变成了异步可中断更新。
+setState自动批处理
+renderAPI更改 ReactDOM.createRoot(root).render(<App />);
+startTransition、useDeferredValue
+
+
 -----2023------
 查漏补缺 最近两周出去面试遇到的面试题（前端初级、长更）
 https://juejin.cn/post/7073869980411887652
@@ -773,6 +832,8 @@ https://juejin.cn/post/6844904197595332622
 service worker,如何实现全屏换肤 useRef
 前端优化，btc项目核心梳理
 后端相关
+
+移动端样式rem, 跨站脚本攻击
 
 高级前端面筋
 https://www.bilibili.com/read/cv19424440?from=articleDetail
