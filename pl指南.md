@@ -830,6 +830,11 @@ https://juejin.cn/post/6844904197595332622
 
 微前端，react最新版本的特性,18，vue新版本特性,vue3新特性,vite
 service worker,如何实现全屏换肤 useRef,跨域
+
+react.purecomponent
+https://juejin.cn/post/6844904094021206024
+当使用component时，父组件的state或prop更新时，无论子组件的state、prop是否更新，都会触发子组件的更新，这会形成很多没必要的render，浪费很多性能；pureComponent的优点在于：pureComponent在shouldComponentUpdate只进行浅层的比较，只要外层对象没变化，就不会触发render,减少了不必要的render
+
 前端优化，btc项目核心梳理
 后端相关
 
