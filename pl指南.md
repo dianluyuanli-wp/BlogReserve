@@ -817,6 +817,33 @@ setState自动批处理
 renderAPI更改 ReactDOM.createRoot(root).render(<App />);
 startTransition、useDeferredValue
 
+react和vue区别：
+https://juejin.cn/post/7144648542472044558
+，比如都使用虚拟DOM高效的更新视图，都提倡组件化，都实现了数据驱动视图，都使用diff算法，也都对diff算法进行了优化
+
+都有组件化：
+React推荐的做法是JSX + inline style, 也就是把 HTML 和 CSS 全都写进 JavaScript 中,即 all in js;
+
+Vue 推荐的做法是 template 的单文件组件格式(简单易懂，从传统前端转过来易于理解),即 html,css,JS 写在同一个文件(vue也支持JSX写法)
+
+虚拟dom的差别：
+react 会自顶向下全diff。vue会跟踪每一个组件的依赖关系,不需要重新渲染整个组件树。Vue2的核心Diff算法采用了双端比较的算法，同时从新旧children的两端开始进行比较，借助key值找到可复用的节点，再进行相关操作。相比React的Diff算法，同样情况下可以减少移动节点次数，减少不必要的性能损耗，更加的优雅。
+
+数据驱动视图：
+同时每一个实例对象都有一个watcher实例对象，他会在模板编译的过程中,用getter去访问data的属性，watcher此时就会把用到的data属性记为依赖，这样就建立了视图与数据之间的联系。当之后我们渲染视图的数据依赖发生改变（即数据的setter被调用）的时候，watcher会对比前后两个的数值是否发生变化，然后确定是否通知视图进行重新渲染。
+
+React通过setState实现数据驱动视图，通过setState来引发一次组件的更新过程从而实现页面的重新渲染
+
+vue2和vue3的变化
+https://juejin.cn/post/7203195123433734203
+响应性：
+2依赖Object.defineProperty ,3依赖refect和proxy
+
+运行时
+3把宿主换将和渲染逻辑进行分离
+
+编辑器
+script setup
 
 -----2023------
 查漏补缺 最近两周出去面试遇到的面试题（前端初级、长更）
@@ -829,7 +856,8 @@ https://juejin.cn/post/7061588533214969892
 https://juejin.cn/post/6844904197595332622
 
 微前端，react最新版本的特性,18，vue新版本特性,vue3新特性,vite
-service worker,如何实现全屏换肤 useRef,跨域
+service worker,如何实现全屏换肤 useRef,跨域,requestAnimationFrame实操，
+你想要问什么问题？
 
 react.purecomponent
 https://juejin.cn/post/6844904094021206024

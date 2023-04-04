@@ -2,7 +2,7 @@
  * @Author: dianluyuanli-wp
  * @LastEditors: dianluyuanli-wp
  * @Date: 2023-03-18 15:29:32
- * @LastEditTime: 2023-03-27 16:52:36
+ * @LastEditTime: 2023-04-02 19:09:42
  */
 //  装饰器,针对属性或方法
 function decorator(type) {
@@ -94,33 +94,32 @@ Object.assign({}, obj);
 //.slice() 和.contact()
 
 //防抖,无论出发多少次，只执行最后一次
-function debounce(fn,delay,immediate) {
-    let timer,result;
-    const defn = function(...args) {
-        if(timer) {
-            clearTimeout(timer);
-        }
-        if(immediate) {
-            const callNow = !timer;
-            timer = setTimeout(()=> {
-                fn.apply(this,args)
-            },delay);
-            if(callNow) {
-                result = fn.apply(this,args)
-            }
-            return result
-        } else {
-            timer = setTimeout(()=> {
-                fn.apply(this,args)
-            },delay);
-        }
-    }
-    defn.cancle = ()=> {
-        clearTimeout(timer);
-        timer=null;
-    }
-    return defn;
-}
+function debounce(fn, delay, immediate) {
+    var timer;
+    return function() {
+      var context = this;
+      var args = arguments;
+      // 停止定时器
+      if (timer) clearTimeout(timer);
+      // 回调函数执行的时机
+      if (immediate) {
+        // 是否已经执行过
+        // 执行过，则timer指向定时器对象，callNow 为 false
+        // 未执行，则timer 为 null，callNow 为 true
+        var callNow = !timer;
+        // 设置延时
+        timer = setTimeout(function() {
+          timer = null;
+        }, delay);
+        if (callNow) fn.apply(context, args);
+      } else {
+        // 停止调用后delay时间才执行回调函数
+        timer = setTimeout(function() {
+          fn.apply(context, args);
+        }, delay);
+      }
+    };
+  }
 //截留
 function thro(fn,wait,option) {
     let timer;
