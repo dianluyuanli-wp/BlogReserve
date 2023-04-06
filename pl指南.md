@@ -54,21 +54,19 @@ entry/client里面基本是个空壳，啥都没有,csr的时候注入client的c
 
 使用next.js架构进行后端渲染，优化用户体验，方便进行SEO，页面内提供了行业国家等等筛选器，方便广告主快速定位自己感兴趣的素材或者行业广告，引入缓存机制，降低服务期负担。
 
-seo优化，html标签语义化改造，htmlheader动态添加关键词和描述，每次发布时自动更新sitemap，方便google爬虫更新站点的页面内容，img添加alt,增加高权重被引
+seo优化，html标签语义化改造，htmlheader动态添加关键词和描述，每次发布时自动更新sitemap，方便google爬虫更新站点的页面内容，img添加alt,增加高权重被引。
 
 ## 自创
-将链上数据通过图形化的方式呈现给用户，方便用户进行体验，用户可以在宏观数据，衍生品，市场估值等等板块中寻找自己关心的内容进行探索，用户可以收藏和分享他喜欢的内容，同时也提供了高效的站内搜索功能以及国际化
+将链上数据通过图形化的方式呈现给用户，方便用户进行体验，用户可以在宏观数据，衍生品，市场估值等等板块中寻找自己关心的内容进行探索，用户可以收藏和分享他喜欢的内容，同时也提供了高效的站内搜索功能以及国际化 
 
 设计了一套架构，能够快速生成各种不同类型的图表，将echarts的option生成过程中的几个关键节点插入函数钩子，方便各个图表进行定制化开发，每个图标只需要修改少数内容就可以沿用尽可能多的图表公共逻辑。
 
 设计了后端JWT用户认证架构和引入redis缓存，提高服务性能，避免频繁查询mysql底表
-自建大数据集群，编写定时任务自动处理新生成的数据，设计数据结构存储海量区块数据，同时兼顾后续图表数据的产出
-
-
+自建大数据集群，编写定时任务自动处理新生成的数据，设计数据结构存储海量区块数据，同时兼顾后续图表数据的产出 
 
 ## 装饰器写法
-https://blog.csdn.net/zl_best/article/details/94447018
-通过装饰器log给一个类新增logger方法,如果带参数，返回的是科里化的结果函数
+https://blog.csdn.net/zl_best/article/details/94447018 
+通过装饰器log给一个类新增logger方法,如果带参数，返回的是科里化的结果函数 
 
 装饰器实战
 https://juejin.cn/post/6844903506562777101
@@ -737,8 +735,8 @@ native调h5 获取window上挂载的对象
 链接：https://juejin.cn/post/6844904165462769678
 事件循环不一定每轮都伴随着重渲染，但是如果有微任务，一定会伴随着微任务执行。
 决定浏览器视图是否渲染的因素很多，浏览器是非常聪明的。
-requestAnimationFrame在重新渲染屏幕之前执行，非常适合用来做动画。
-requestIdleCallback在渲染屏幕之后执行，并且是否有空执行要看浏览器的调度，如果你一定要它在某个时间内执行，请使用 timeout参数。
+requestAnimationFrame在重新渲染屏幕之前执行，非常适合用来做动画。cancelAnimationFrame
+requestIdleCallback在渲染屏幕之后执行，执行那些不需要及时更新的任务，例如计算、数据处理和网络请求。并且是否有空执行要看浏览器的调度，如果你一定要它在某个时间内执行，请使用 timeout参数。cancelIdleCallback
 resize和scroll事件其实自带节流，它只在 Event Loop 的渲染阶段去派发事件到 EventTarget 上。
 
 链接：https://juejin.cn/post/6844904165462769678
@@ -840,10 +838,40 @@ https://juejin.cn/post/7203195123433734203
 2依赖Object.defineProperty ,3依赖refect和proxy
 
 运行时
-3把宿主换将和渲染逻辑进行分离
+3把宿主环境和渲染逻辑进行分离，可以在非浏览器运行
 
 编辑器
 script setup
+
+如何判断一个元素是否在视口内？
+
+useRef
+任意一次渲染周期(函数调用)的state/prop(直观来说就是like值)都不会随着时间改变，因为每次调用渲染函数中的like值都是一个常量(在各自的渲染函数作用域内)。它的作用仅仅只是渲染输出，插入jsx中的数字而已。
+
+作用一：多次渲染之间的纽带
+useRef会在所有的render中保持对返回值的唯一引用。因为所有对ref的赋值和取值拿到的都是最终的状态，并不会因为不同的render中存在不同的隔离。
+
+react中获取DOM
+通过useRef创建一个变量进行保存(domRef)。
+在jsx中通过ref={domRef}给对应元素节点添加属性。
+在页面挂载后通过domRef.current就可以获取对应节点的真实DOM元素了。
+
+跨域：
+不同域之间相互请求资源，就算作“跨域”。它是由浏览器的同源策略造成的，是浏览器对javascript实施的安全限制。
+
+简单请求和非简单请求
+简单请求采取先请求后判断的方式，非简单请求采取预检请求的方式判断是否允许跨域访问。
+请求端带origin,服务器返回Access-Control-Allow-Origin
+Access-Control-Allow-Credentials 是否携带cookie
+Access-Control-Allow-Headers 允许带头信息
+
+非简单请求先发option
+
+解决：
+客户端在浏览器设置
+
+服务端
+代理转发，配置cors
 
 -----2023------
 查漏补缺 最近两周出去面试遇到的面试题（前端初级、长更）
@@ -867,6 +895,15 @@ https://juejin.cn/post/6844904094021206024
 后端相关
 
 移动端样式rem, 跨站脚本攻击
+函数式编程，如何判断一个元素是否可见
+1.el.offsetTop - document.documentElement.scrollTop <= viewPortHeight
+2.getBoundingClientRect 相对于视口的位置
+3.intersection observer
+
+初级和中高级的比例
+技术分享？
+开会的话重要内容是什么？
+项目发布的节奏大致是怎样的？
 
 高级前端面筋
 https://www.bilibili.com/read/cv19424440?from=articleDetail
